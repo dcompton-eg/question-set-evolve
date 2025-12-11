@@ -182,16 +182,33 @@ class QuestionSetEvolutionEngine:
     async def process_candidate(
         self, candidate: EvolutionCandidate, usage: TokenUsage
     ) -> None:
-        """Generate, evaluate, and score a candidate."""
-        # Generate question set
-        candidate.question_set = await self.generate_question_set(candidate, usage)
+        """Generate, evaluate, and score a candidate.
 
-        # Generate rubric
-        candidate.rubric = await self.generate_rubric(candidate, usage)
+        If any step fails, the candidate gets a score of 0 and processing continues.
+        """
+        try:
+            # Generate question set
+            candidate.question_set = await self.generate_question_set(candidate, usage)
+        except Exception as e:
+            print(f"  Failed to generate question set: {e}")
+            candidate.score = 0.0
+            return
 
-        # Evaluate
-        candidate.feedback = await self.evaluate_candidate(candidate, usage)
-        candidate.score = candidate.feedback.scores.overall_average
+        try:
+            # Generate rubric
+            candidate.rubric = await self.generate_rubric(candidate, usage)
+        except Exception as e:
+            print(f"  Failed to generate rubric: {e}")
+            candidate.score = 0.0
+            return
+
+        try:
+            # Evaluate
+            candidate.feedback = await self.evaluate_candidate(candidate, usage)
+            candidate.score = candidate.feedback.scores.overall_average
+        except Exception as e:
+            print(f"  Failed to evaluate candidate: {e}")
+            candidate.score = 0.0
 
     async def run_generation(self, generation: int) -> GenerationResult:
         """Run a single generation of evolution."""

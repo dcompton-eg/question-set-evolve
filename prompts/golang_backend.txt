@@ -4,68 +4,49 @@
 Senior Go (Golang) Backend Engineer
 
 ## Interview Context
-**This is a technical interview.**
-- Questions should assess deep Go expertise and backend engineering skills
-- Focus on language features, concurrency, system design, and production experience
-- 45-minute technical screen
+**This is a recruiter phone screen.**
+- Questions will be asked by a non-technical recruiter reading from a script
+- Questions must be simple to read aloud and understand
+- 10-minute phone screen
 - Scoring will be done by LLM-as-judge from the transcript
 
 ## Candidate Level
 Senior (5+ years Go experience, 7+ years total engineering experience)
 
 ## What We Want to Learn
-- Deep understanding of Go's concurrency model (goroutines, channels, select)
-- Knowledge of Go idioms and best practices
-- Experience with Go's type system, interfaces, and error handling
-- Understanding of memory management and performance optimization
-- Production experience with Go services at scale
-- System design skills for backend services
-
-## Technical Areas to Cover
-- Goroutines, channels, and concurrency patterns
-- Interface design and composition
-- Error handling patterns
-- Memory management and garbage collection
-- Testing strategies (unit, integration, benchmarks)
-- Common packages (context, sync, net/http, encoding/json)
-- Database access patterns
-- API design (REST, gRPC)
-- Observability (logging, metrics, tracing)
+- Whether the candidate has genuine hands-on Go experience
+- Basic understanding of Go's key concepts (concurrency, error handling)
+- Production experience with Go services
+- Ability to explain technical concepts clearly
 
 ## Question Requirements
-- 4-5 technical questions
-- Mix of conceptual and experience-based questions
-- At least one question on concurrency
-- At least one question on error handling or interfaces
-- At least one system design or architecture question
-- Follow-up questions that probe deeper understanding
+- Exactly 3 scripted questions
+- No follow-up questions (recruiter reads questions as-is)
+- Questions must be easy for a non-technical person to read aloud
+- Questions should allow candidates to demonstrate real experience
+- Avoid jargon-heavy questions that are hard to pronounce or understand
+- Questions should fit within ~10 minutes total (about 3 minutes per question)
 
 ## Red Flags (for LLM scoring rubric)
-- Cannot explain goroutine vs thread differences
-- Doesn't understand channel semantics or blocking behavior
-- No awareness of common pitfalls (race conditions, goroutine leaks)
-- Cannot articulate interface design principles
-- No production debugging or performance optimization experience
-- Unfamiliar with standard library packages
-- Cannot discuss trade-offs in design decisions
+- Cannot explain what they've built with Go
+- Vague or generic answers that could apply to any language
+- No mention of real projects or production experience
+- Cannot articulate basic Go concepts in simple terms
 
 ## Green Flags (for LLM scoring rubric)
-- Clear explanation of Go's concurrency model with examples
-- Demonstrates understanding of when to use channels vs mutexes
-- Discusses error handling strategies (wrapping, sentinel errors, custom types)
-- Shows awareness of performance considerations
-- Can discuss real production issues they've debugged
-- Understands Go's philosophy (simplicity, composition over inheritance)
-- Familiar with testing patterns including table-driven tests
+- Specific examples from real projects
+- Clear explanation of Go-specific features and why they matter
+- Demonstrates understanding of Go's strengths and trade-offs
+- Can explain technical concepts in accessible language
 
 ## Output Format
-Provide a complete question set with:
-- Clear technical questions
-- 2-3 follow-up questions that probe deeper
-- Time allocation (should sum to ~40 minutes)
-- What to look for in answers
+Provide a question set with:
+- Exactly 3 clear, scripted questions
+- Questions phrased for a non-technical recruiter to read aloud
+- Time allocation (should sum to ~10 minutes)
+- What to look for in answers (for LLM scoring)
 
 The LLM scoring rubric should include:
-- Technical accuracy requirements
-- Depth of understanding indicators
-- Specific signals for each score level
+- What a strong answer looks like
+- What a weak answer looks like
+- Specific signals to listen for
