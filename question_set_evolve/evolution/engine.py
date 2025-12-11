@@ -13,9 +13,9 @@ from ..agents.mutator import mutator_agent, MutatedPrompts, create_mutation_prom
 from ..models import QuestionSet, ScoringRubric
 
 
-# Claude Sonnet 4.5 pricing (per 1M tokens) - update these as needed
-INPUT_PRICE_PER_1M = 3.00  # $ per 1M input tokens
-OUTPUT_PRICE_PER_1M = 15.00  # $ per 1M output tokens
+# Claude Haiku 4.5 pricing (per 1M tokens) - update these as needed
+INPUT_PRICE_PER_1M = 0.80  # $ per 1M input tokens
+OUTPUT_PRICE_PER_1M = 4.00  # $ per 1M output tokens
 
 
 @dataclass

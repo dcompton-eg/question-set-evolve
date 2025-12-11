@@ -44,10 +44,11 @@ Be thorough but fair. Your evaluation should be actionable for hiring decisions.
 
 
 candidate_scorer_agent = Agent(
-    "anthropic:claude-sonnet-4-5",
+    "anthropic:claude-haiku-4-5",
     system_prompt=CANDIDATE_SCORER_SYSTEM_PROMPT,
     output_type=CandidateEvaluation,
-    model_settings={"temperature": 0.1},
+    model_settings={"temperature": 0.1, "max_tokens": 8192},
+    retries=3,
 )
 
 

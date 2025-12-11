@@ -51,8 +51,9 @@ Be creative but practical. The questions should work in real interview settings.
 
 
 question_writer_agent = Agent(
-    "anthropic:claude-sonnet-4-5",
+    "anthropic:claude-haiku-4-5",
     system_prompt=QUESTION_WRITER_SYSTEM_PROMPT,
     output_type=QuestionSetOutput,
-    model_settings={"temperature": 0.7},
+    model_settings={"temperature": 0.7, "max_tokens": 8192},
+    retries=3,
 )

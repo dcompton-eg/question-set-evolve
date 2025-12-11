@@ -68,10 +68,11 @@ Be surgical. Make the minimum changes needed to address feedback.
 
 
 mutator_agent = Agent(
-    "anthropic:claude-sonnet-4-5",
+    "anthropic:claude-haiku-4-5",
     system_prompt=MUTATOR_SYSTEM_PROMPT,
     output_type=MutatedPrompts,
-    model_settings={"temperature": 0.8},
+    model_settings={"temperature": 0.8, "max_tokens": 8192},
+    retries=3,
 )
 
 

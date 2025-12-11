@@ -57,10 +57,11 @@ Be thorough but practical. The rubric should work for both human and LLM evaluat
 
 
 rubric_writer_agent = Agent(
-    "anthropic:claude-sonnet-4-5",
+    "anthropic:claude-haiku-4-5",
     system_prompt=RUBRIC_WRITER_SYSTEM_PROMPT,
     output_type=RubricOutput,
-    model_settings={"temperature": 0.5},
+    model_settings={"temperature": 0.5, "max_tokens": 8192},
+    retries=3,
 )
 
 

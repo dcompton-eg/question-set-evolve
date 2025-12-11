@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import logging
 from pathlib import Path
 
 from .evolution.engine import QuestionSetEvolutionEngine, TokenUsage, INPUT_PRICE_PER_1M, OUTPUT_PRICE_PER_1M
@@ -10,6 +11,12 @@ from .agents.question_writer import question_writer_agent
 from .agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
 from .agents.candidate_scorer import candidate_scorer_agent, create_scoring_prompt
 from .models import QuestionSet, ScoringRubric
+
+# Set up logging - only show warnings and errors
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(message)s'
+)
 
 
 def load_prompt(prompt_arg: str | None, prompt_file_arg: str | None) -> str:
@@ -25,7 +32,7 @@ def extract_usage(result) -> tuple[int, int]:
     """Extract input/output tokens from an agent result."""
     try:
         usage = result.usage()
-        return usage.request_tokens or 0, usage.response_tokens or 0
+        return usage.input_tokens or 0, usage.output_tokens or 0
     except Exception:
         return 0, 0
 
@@ -35,54 +42,75 @@ async def cmd_generate(args: argparse.Namespace) -> None:
     prompt = load_prompt(args.prompt, args.prompt_file)
     total_usage = TokenUsage()
 
-    print("Generating question set...")
+    print("=" * 60)
+    print("STEP 1: Generating Question Set")
+    print("=" * 60)
     question_result = await question_writer_agent.run(prompt)
     input_tokens, output_tokens = extract_usage(question_result)
     total_usage.add(input_tokens, output_tokens)
-    print(f"  Tokens: {input_tokens:,} in / {output_tokens:,} out")
+    print(f"Tokens: {input_tokens:,} in / {output_tokens:,} out")
 
     question_set = question_result.output.question_set
 
     print(f"\nQuestion Set: {question_set.title}")
     print(f"Target Role: {question_set.target_role}")
-    print(f"Questions: {len(question_set.questions)}")
+    print(f"Total Time: {question_set.total_time_minutes} minutes")
+    print(f"Description: {question_set.description[:150]}...")
+    print(f"\nQuestions ({len(question_set.questions)}):")
 
     for i, q in enumerate(question_set.questions, 1):
         print(f"\n  Q{i} [{q.category}] [{q.difficulty}] [{q.time_allocation_minutes}min]")
-        print(f"  {q.question_text}")
+        print(f"  {q.question_text[:200]}{'...' if len(q.question_text) > 200 else ''}")
 
     # Generate rubric
-    print("\nGenerating scoring rubric...")
+    print("\n" + "=" * 60)
+    print("STEP 2: Generating Scoring Rubric")
+    print("=" * 60)
     rubric_prompt = create_rubric_prompt(question_set, prompt)
     rubric_result = await rubric_writer_agent.run(rubric_prompt)
     input_tokens, output_tokens = extract_usage(rubric_result)
     total_usage.add(input_tokens, output_tokens)
-    print(f"  Tokens: {input_tokens:,} in / {output_tokens:,} out")
+    print(f"Tokens: {input_tokens:,} in / {output_tokens:,} out")
 
     rubric = rubric_result.output.rubric
 
     print(f"\nRubric: {rubric.title}")
-    print(f"Question rubrics: {len(rubric.question_rubrics)}")
+    print(f"Overall Guidance: {rubric.overall_scoring_guidance[:200]}...")
+    print(f"\nQuestion Rubrics ({len(rubric.question_rubrics)}):")
+    for qr in rubric.question_rubrics:
+        print(f"\n  [{qr.question_id}]")
+        print(f"  Criteria: {len(qr.criteria)}")
+        for c in qr.criteria:
+            print(f"    - {c.name} (weight: {c.weight})")
+        if qr.red_flags:
+            print(f"  Red flags: {len(qr.red_flags)}")
+        if qr.bonus_indicators:
+            print(f"  Bonus indicators: {len(qr.bonus_indicators)}")
 
     # Save outputs
+    print("\n" + "=" * 60)
+    print("STEP 3: Saving Outputs")
+    print("=" * 60)
+
     output_dir = Path(args.output) if args.output else Path("output")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     qs_path = output_dir / "questions.json"
     qs_path.write_text(question_set.model_dump_json(indent=2))
-    print(f"\nSaved questions to {qs_path}")
+    print(f"Saved questions to {qs_path}")
 
     rubric_path = output_dir / "rubric.json"
     rubric_path.write_text(rubric.model_dump_json(indent=2))
     print(f"Saved rubric to {rubric_path}")
 
     # Print usage summary
-    print(f"\n{'='*50}")
-    print("TOKEN USAGE SUMMARY")
-    print(f"{'='*50}")
-    print(f"Total input tokens:  {total_usage.input_tokens:,}")
-    print(f"Total output tokens: {total_usage.output_tokens:,}")
-    print(f"Total cost:          ${total_usage.total_cost:.4f}")
+    print("\n" + "=" * 60)
+    print("SUMMARY")
+    print("=" * 60)
+    print(f"Input tokens:  {total_usage.input_tokens:,}")
+    print(f"Output tokens: {total_usage.output_tokens:,}")
+    print(f"Total cost:    ${total_usage.total_cost:.4f}")
+    print("\nDone!")
 
 
 async def cmd_evolve(args: argparse.Namespace) -> None:
