@@ -1,5 +1,7 @@
 """Rubric Writer Agent - generates scoring rubrics for question sets."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
@@ -9,8 +11,9 @@ from ..models import QuestionSet, ScoringRubric
 class RubricOutput(BaseModel):
     """Output from the rubric writer agent."""
 
-    rubric: ScoringRubric = Field(description="The generated scoring rubric")
+    rubric: ScoringRubric = Field(default_factory=ScoringRubric, description="The generated scoring rubric")
     calibration_notes: str = Field(
+        default="",
         description="Notes on how to calibrate scoring across interviewers"
     )
 
@@ -56,10 +59,10 @@ Be thorough but practical. The rubric should work for both human and LLM evaluat
 """
 
 
-rubric_writer_agent = Agent(
+rubric_writer_agent = Agent[None, RubricOutput](
     "anthropic:claude-haiku-4-5",
-    system_prompt=RUBRIC_WRITER_SYSTEM_PROMPT,
     output_type=RubricOutput,
+    instructions=RUBRIC_WRITER_SYSTEM_PROMPT,
     model_settings={"temperature": 0.5, "max_tokens": 8192},
     retries=3,
 )

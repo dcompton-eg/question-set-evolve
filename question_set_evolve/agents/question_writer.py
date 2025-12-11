@@ -1,5 +1,7 @@
 """Question Writer Agent - generates interview question sets."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
@@ -9,8 +11,9 @@ from ..models import QuestionSet
 class QuestionSetOutput(BaseModel):
     """Output from the question writer agent."""
 
-    question_set: QuestionSet = Field(description="The generated question set")
+    question_set: QuestionSet = Field(default_factory=QuestionSet, description="The generated question set")
     design_rationale: str = Field(
+        default="",
         description="Explanation of design choices made for this question set"
     )
 
@@ -50,10 +53,10 @@ Be creative but practical. The questions should work in real interview settings.
 """
 
 
-question_writer_agent = Agent(
+question_writer_agent = Agent[None, QuestionSetOutput](
     "anthropic:claude-haiku-4-5",
-    system_prompt=QUESTION_WRITER_SYSTEM_PROMPT,
     output_type=QuestionSetOutput,
+    instructions=QUESTION_WRITER_SYSTEM_PROMPT,
     model_settings={"temperature": 0.7, "max_tokens": 8192},
     retries=3,
 )

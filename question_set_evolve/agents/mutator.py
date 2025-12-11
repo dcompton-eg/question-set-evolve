@@ -1,5 +1,7 @@
 """Mutator Agent - co-evolves question and rubric prompts based on judge feedback."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
@@ -13,9 +15,11 @@ class MutatedPrompts(BaseModel):
         description="The mutated prompt for generating questions"
     )
     rubric_prompt_additions: str = Field(
+        default="",
         description="Additional guidance to add to the rubric prompt"
     )
     mutation_rationale: str = Field(
+        default="",
         description="Explanation of what was changed and why"
     )
 
@@ -67,10 +71,10 @@ Be surgical. Make the minimum changes needed to address feedback.
 """
 
 
-mutator_agent = Agent(
+mutator_agent = Agent[None, MutatedPrompts](
     "anthropic:claude-haiku-4-5",
-    system_prompt=MUTATOR_SYSTEM_PROMPT,
     output_type=MutatedPrompts,
+    instructions=MUTATOR_SYSTEM_PROMPT,
     model_settings={"temperature": 0.8, "max_tokens": 8192},
     retries=3,
 )

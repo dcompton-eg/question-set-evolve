@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from ..agents.question_writer import question_writer_agent, QuestionSetOutput
-from ..agents.rubric_writer import rubric_writer_agent, RubricOutput, create_rubric_prompt
+from ..agents.question_writer import question_writer_agent
+from ..agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
 from ..agents.llm_as_judge import judge_agent, JudgeFeedback, create_judge_prompt
 from ..agents.mutator import mutator_agent, MutatedPrompts, create_mutation_prompt
 from ..models import QuestionSet, ScoringRubric
@@ -111,23 +111,23 @@ class QuestionSetEvolutionEngine:
         """Extract input/output tokens from an agent result."""
         try:
             usage = result.usage()
-            return usage.request_tokens or 0, usage.response_tokens or 0
+            return usage.input_tokens or 0, usage.output_tokens or 0
         except Exception:
             # Fallback if usage not available
             return 0, 0
 
     async def generate_question_set(
         self, candidate: EvolutionCandidate, usage: TokenUsage
-    ) -> QuestionSetOutput:
+    ) -> QuestionSet:
         """Generate a question set using the candidate's prompt."""
         result = await question_writer_agent.run(candidate.question_prompt)
         input_tokens, output_tokens = self._extract_usage(result)
         usage.add(input_tokens, output_tokens)
-        return result.output
+        return result.output.question_set
 
     async def generate_rubric(
         self, candidate: EvolutionCandidate, usage: TokenUsage
-    ) -> RubricOutput:
+    ) -> ScoringRubric:
         """Generate a rubric for the candidate's question set."""
         if candidate.question_set is None:
             raise ValueError("Question set must be generated first")
@@ -143,7 +143,7 @@ class QuestionSetEvolutionEngine:
         result = await rubric_writer_agent.run(prompt)
         input_tokens, output_tokens = self._extract_usage(result)
         usage.add(input_tokens, output_tokens)
-        return result.output
+        return result.output.rubric
 
     async def evaluate_candidate(
         self, candidate: EvolutionCandidate, usage: TokenUsage
@@ -184,12 +184,10 @@ class QuestionSetEvolutionEngine:
     ) -> None:
         """Generate, evaluate, and score a candidate."""
         # Generate question set
-        question_output = await self.generate_question_set(candidate, usage)
-        candidate.question_set = question_output.question_set
+        candidate.question_set = await self.generate_question_set(candidate, usage)
 
         # Generate rubric
-        rubric_output = await self.generate_rubric(candidate, usage)
-        candidate.rubric = rubric_output.rubric
+        candidate.rubric = await self.generate_rubric(candidate, usage)
 
         # Evaluate
         candidate.feedback = await self.evaluate_candidate(candidate, usage)

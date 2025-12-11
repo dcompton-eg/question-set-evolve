@@ -51,7 +51,6 @@ async def cmd_generate(args: argparse.Namespace) -> None:
     print(f"Tokens: {input_tokens:,} in / {output_tokens:,} out")
 
     question_set = question_result.output.question_set
-
     print(f"\nQuestion Set: {question_set.title}")
     print(f"Target Role: {question_set.target_role}")
     print(f"Total Time: {question_set.total_time_minutes} minutes")
@@ -73,7 +72,6 @@ async def cmd_generate(args: argparse.Namespace) -> None:
     print(f"Tokens: {input_tokens:,} in / {output_tokens:,} out")
 
     rubric = rubric_result.output.rubric
-
     print(f"\nRubric: {rubric.title}")
     print(f"Overall Guidance: {rubric.overall_scoring_guidance[:200]}...")
     print(f"\nQuestion Rubrics ({len(rubric.question_rubrics)}):")

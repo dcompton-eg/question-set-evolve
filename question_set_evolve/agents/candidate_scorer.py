@@ -1,5 +1,7 @@
 """Candidate Scorer Agent - scores candidate transcripts using rubrics."""
 
+from __future__ import annotations
+
 from pydantic_ai import Agent
 
 from ..models import QuestionSet, ScoringRubric, CandidateEvaluation
@@ -43,10 +45,10 @@ Be thorough but fair. Your evaluation should be actionable for hiring decisions.
 """
 
 
-candidate_scorer_agent = Agent(
+candidate_scorer_agent = Agent[None, CandidateEvaluation](
     "anthropic:claude-haiku-4-5",
-    system_prompt=CANDIDATE_SCORER_SYSTEM_PROMPT,
     output_type=CandidateEvaluation,
+    instructions=CANDIDATE_SCORER_SYSTEM_PROMPT,
     model_settings={"temperature": 0.1, "max_tokens": 8192},
     retries=3,
 )

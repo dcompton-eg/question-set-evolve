@@ -1,5 +1,7 @@
 """LLM-as-Judge Agent - evaluates quality of question sets and rubrics."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
@@ -11,41 +13,41 @@ class QualityScores(BaseModel):
 
     # Question Set Quality
     question_clarity: int = Field(
-        ge=0, le=100, description="How clear and unambiguous are the questions"
+        default=50, ge=0, le=100, description="How clear and unambiguous are the questions"
     )
     question_relevance: int = Field(
-        ge=0, le=100, description="How relevant are questions to the target role"
+        default=50, ge=0, le=100, description="How relevant are questions to the target role"
     )
     question_depth: int = Field(
-        ge=0, le=100, description="How well questions allow candidates to show expertise"
+        default=50, ge=0, le=100, description="How well questions allow candidates to show expertise"
     )
     question_coverage: int = Field(
-        ge=0, le=100, description="How well questions cover important skill areas"
+        default=50, ge=0, le=100, description="How well questions cover important skill areas"
     )
     question_fairness: int = Field(
-        ge=0, le=100, description="How fair and unbiased are the questions"
+        default=50, ge=0, le=100, description="How fair and unbiased are the questions"
     )
 
     # Rubric Quality
     rubric_objectivity: int = Field(
-        ge=0, le=100, description="How objective and measurable are the criteria"
+        default=50, ge=0, le=100, description="How objective and measurable are the criteria"
     )
     rubric_discrimination: int = Field(
-        ge=0, le=100, description="How well the rubric distinguishes skill levels"
+        default=50, ge=0, le=100, description="How well the rubric distinguishes skill levels"
     )
     rubric_calibration: int = Field(
-        ge=0, le=100, description="How well examples help calibrate scoring"
+        default=50, ge=0, le=100, description="How well examples help calibrate scoring"
     )
     rubric_llm_compatibility: int = Field(
-        ge=0, le=100, description="How well rubric works for LLM-based scoring"
+        default=50, ge=0, le=100, description="How well rubric works for LLM-based scoring"
     )
 
     # Co-evolution Quality
     alignment: int = Field(
-        ge=0, le=100, description="How well questions and rubric align"
+        default=50, ge=0, le=100, description="How well questions and rubric align"
     )
     completeness: int = Field(
-        ge=0, le=100, description="Whether rubric covers all questions adequately"
+        default=50, ge=0, le=100, description="Whether rubric covers all questions adequately"
     )
 
     @property
@@ -90,20 +92,24 @@ class QualityScores(BaseModel):
 class JudgeFeedback(BaseModel):
     """Complete feedback from the judge agent."""
 
-    scores: QualityScores = Field(description="Numerical quality scores")
+    scores: QualityScores = Field(default_factory=QualityScores, description="Numerical quality scores")
     question_strengths: list[str] = Field(
-        description="What works well in the question set"
+        default_factory=list, description="What works well in the question set"
     )
     question_weaknesses: list[str] = Field(
-        description="Issues with the question set"
+        default_factory=list, description="Issues with the question set"
     )
-    rubric_strengths: list[str] = Field(description="What works well in the rubric")
-    rubric_weaknesses: list[str] = Field(description="Issues with the rubric")
+    rubric_strengths: list[str] = Field(
+        default_factory=list, description="What works well in the rubric"
+    )
+    rubric_weaknesses: list[str] = Field(
+        default_factory=list, description="Issues with the rubric"
+    )
     alignment_issues: list[str] = Field(
-        description="Ways questions and rubric could be better aligned"
+        default_factory=list, description="Ways questions and rubric could be better aligned"
     )
     improvement_suggestions: list[str] = Field(
-        description="Specific actionable improvements"
+        default_factory=list, description="Specific actionable improvements"
     )
 
 
@@ -140,10 +146,10 @@ Score honestly. A score of 70-80 represents solid, usable materials. Reserve 90+
 """
 
 
-judge_agent = Agent(
+judge_agent = Agent[None, JudgeFeedback](
     "anthropic:claude-haiku-4-5",
-    system_prompt=JUDGE_SYSTEM_PROMPT,
     output_type=JudgeFeedback,
+    instructions=JUDGE_SYSTEM_PROMPT,
     model_settings={"temperature": 0.1, "max_tokens": 8192},
     retries=3,
 )
