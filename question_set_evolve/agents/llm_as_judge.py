@@ -141,7 +141,7 @@ Score honestly. A score of 70-80 represents solid, usable materials. Reserve 90+
 
 
 judge_agent = Agent(
-    "openai:gpt-4.1",
+    "anthropic:claude-sonnet-4-5",
     system_prompt=JUDGE_SYSTEM_PROMPT,
     output_type=JudgeFeedback,
     model_settings={"temperature": 0.1},

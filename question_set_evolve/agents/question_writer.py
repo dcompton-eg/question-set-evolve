@@ -51,7 +51,7 @@ Be creative but practical. The questions should work in real interview settings.
 
 
 question_writer_agent = Agent(
-    "openai:gpt-4.1",
+    "anthropic:claude-sonnet-4-5",
     system_prompt=QUESTION_WRITER_SYSTEM_PROMPT,
     output_type=QuestionSetOutput,
     model_settings={"temperature": 0.7},

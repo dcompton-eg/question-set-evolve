@@ -4,62 +4,68 @@
 Senior Go (Golang) Backend Engineer
 
 ## Interview Context
-**This is a recruiter screen, not a technical interview.**
-- Non-technical recruiters will read these questions verbatim
-- Recruiters CANNOT improvise—all questions and follow-ups must be scripted
-- Questions must be easy to read aloud without technical background
-- Scoring will be done later by LLM-as-judge from the transcript
-- Focus on experience, approach, and communication—not coding ability
-- 30-minute phone/video screen
+**This is a technical interview.**
+- Questions should assess deep Go expertise and backend engineering skills
+- Focus on language features, concurrency, system design, and production experience
+- 45-minute technical screen
+- Scoring will be done by LLM-as-judge from the transcript
 
 ## Candidate Level
 Senior (5+ years Go experience, 7+ years total engineering experience)
 
 ## What We Want to Learn
-- Does the candidate have genuine, hands-on Go experience?
-- Can they explain technical concepts in accessible terms?
-- Do they have relevant production experience?
-- Are they a good communicator and collaborator?
-- Do they show growth mindset and learning ability?
+- Deep understanding of Go's concurrency model (goroutines, channels, select)
+- Knowledge of Go idioms and best practices
+- Experience with Go's type system, interfaces, and error handling
+- Understanding of memory management and performance optimization
+- Production experience with Go services at scale
+- System design skills for backend services
 
-## Question Design Principles
-- Questions should sound natural when read aloud by a non-engineer
-- Avoid jargon in the question itself (candidate can use jargon in answers)
-- Focus on "tell me about a time" and "how would you explain" formats
-- Good answers will be recognizable even without technical expertise
-- Look for: clarity, concrete examples, enthusiasm, self-awareness
+## Technical Areas to Cover
+- Goroutines, channels, and concurrency patterns
+- Interface design and composition
+- Error handling patterns
+- Memory management and garbage collection
+- Testing strategies (unit, integration, benchmarks)
+- Common packages (context, sync, net/http, encoding/json)
+- Database access patterns
+- API design (REST, gRPC)
+- Observability (logging, metrics, tracing)
 
 ## Question Requirements
-- 3-4 questions total
-- Questions a recruiter can confidently ask and understand responses to
-- Focus on experience stories and communication ability
-- At least one question about explaining technical concepts simply
-- At least one question about working with others
-- NO coding questions, NO whiteboard, NO technical problem-solving
+- 4-5 technical questions
+- Mix of conceptual and experience-based questions
+- At least one question on concurrency
+- At least one question on error handling or interfaces
+- At least one system design or architecture question
+- Follow-up questions that probe deeper understanding
 
 ## Red Flags (for LLM scoring rubric)
-- Vague answers without specific examples
-- Cannot explain their work in simple terms
-- Dismissive of non-technical colleagues
-- No concrete projects or contributions mentioned
-- Blames others, doesn't take ownership
-- Claims expertise but can't describe actual usage
+- Cannot explain goroutine vs thread differences
+- Doesn't understand channel semantics or blocking behavior
+- No awareness of common pitfalls (race conditions, goroutine leaks)
+- Cannot articulate interface design principles
+- No production debugging or performance optimization experience
+- Unfamiliar with standard library packages
+- Cannot discuss trade-offs in design decisions
 
 ## Green Flags (for LLM scoring rubric)
-- Specific project examples with their role clearly explained
-- Explains technical work in understandable analogies
-- Shows enthusiasm when discussing their work
-- Mentions collaboration and helping others
-- Honest about challenges and what they learned
-- Describes trade-offs and decisions they made
+- Clear explanation of Go's concurrency model with examples
+- Demonstrates understanding of when to use channels vs mutexes
+- Discusses error handling strategies (wrapping, sentinel errors, custom types)
+- Shows awareness of performance considerations
+- Can discuss real production issues they've debugged
+- Understands Go's philosophy (simplicity, composition over inheritance)
+- Familiar with testing patterns including table-driven tests
 
 ## Output Format
 Provide a complete question set with:
-- Clear question text that reads naturally aloud (script-ready)
-- 2-3 scripted follow-up questions (recruiter will read these verbatim regardless of answer)
-- Time allocation (should sum to ~25 minutes, leaving buffer for intro/questions)
+- Clear technical questions
+- 2-3 follow-up questions that probe deeper
+- Time allocation (should sum to ~40 minutes)
+- What to look for in answers
 
 The LLM scoring rubric should include:
-- What distinguishes strong vs. weak answers
-- Specific signals to look for in transcript
-- Scoring criteria aligned with the skills we want to assess
+- Technical accuracy requirements
+- Depth of understanding indicators
+- Specific signals for each score level

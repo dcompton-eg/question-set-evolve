@@ -44,7 +44,7 @@ Be thorough but fair. Your evaluation should be actionable for hiring decisions.
 
 
 candidate_scorer_agent = Agent(
-    "openai:gpt-4.1",
+    "anthropic:claude-sonnet-4-5",
     system_prompt=CANDIDATE_SCORER_SYSTEM_PROMPT,
     output_type=CandidateEvaluation,
     model_settings={"temperature": 0.1},

@@ -5,7 +5,7 @@ import asyncio
 import json
 from pathlib import Path
 
-from .evolution.engine import QuestionSetEvolutionEngine
+from .evolution.engine import QuestionSetEvolutionEngine, TokenUsage, INPUT_PRICE_PER_1M, OUTPUT_PRICE_PER_1M
 from .agents.question_writer import question_writer_agent
 from .agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
 from .agents.candidate_scorer import candidate_scorer_agent, create_scoring_prompt
@@ -21,12 +21,26 @@ def load_prompt(prompt_arg: str | None, prompt_file_arg: str | None) -> str:
     raise ValueError("Must provide either --prompt or --prompt-file")
 
 
+def extract_usage(result) -> tuple[int, int]:
+    """Extract input/output tokens from an agent result."""
+    try:
+        usage = result.usage()
+        return usage.request_tokens or 0, usage.response_tokens or 0
+    except Exception:
+        return 0, 0
+
+
 async def cmd_generate(args: argparse.Namespace) -> None:
     """Generate a single question set and rubric."""
     prompt = load_prompt(args.prompt, args.prompt_file)
+    total_usage = TokenUsage()
 
     print("Generating question set...")
     question_result = await question_writer_agent.run(prompt)
+    input_tokens, output_tokens = extract_usage(question_result)
+    total_usage.add(input_tokens, output_tokens)
+    print(f"  Tokens: {input_tokens:,} in / {output_tokens:,} out")
+
     question_set = question_result.output.question_set
 
     print(f"\nQuestion Set: {question_set.title}")
@@ -41,6 +55,10 @@ async def cmd_generate(args: argparse.Namespace) -> None:
     print("\nGenerating scoring rubric...")
     rubric_prompt = create_rubric_prompt(question_set, prompt)
     rubric_result = await rubric_writer_agent.run(rubric_prompt)
+    input_tokens, output_tokens = extract_usage(rubric_result)
+    total_usage.add(input_tokens, output_tokens)
+    print(f"  Tokens: {input_tokens:,} in / {output_tokens:,} out")
+
     rubric = rubric_result.output.rubric
 
     print(f"\nRubric: {rubric.title}")
@@ -57,6 +75,14 @@ async def cmd_generate(args: argparse.Namespace) -> None:
     rubric_path = output_dir / "rubric.json"
     rubric_path.write_text(rubric.model_dump_json(indent=2))
     print(f"Saved rubric to {rubric_path}")
+
+    # Print usage summary
+    print(f"\n{'='*50}")
+    print("TOKEN USAGE SUMMARY")
+    print(f"{'='*50}")
+    print(f"Total input tokens:  {total_usage.input_tokens:,}")
+    print(f"Total output tokens: {total_usage.output_tokens:,}")
+    print(f"Total cost:          ${total_usage.total_cost:.4f}")
 
 
 async def cmd_evolve(args: argparse.Namespace) -> None:

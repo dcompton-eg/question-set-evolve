@@ -13,6 +13,50 @@ from ..agents.mutator import mutator_agent, MutatedPrompts, create_mutation_prom
 from ..models import QuestionSet, ScoringRubric
 
 
+# Claude Sonnet 4.5 pricing (per 1M tokens) - update these as needed
+INPUT_PRICE_PER_1M = 3.00  # $ per 1M input tokens
+OUTPUT_PRICE_PER_1M = 15.00  # $ per 1M output tokens
+
+
+@dataclass
+class TokenUsage:
+    """Track token usage and costs."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+    def add(self, input_tokens: int, output_tokens: int) -> None:
+        """Add tokens to the running total."""
+        self.input_tokens += input_tokens
+        self.output_tokens += output_tokens
+
+    def merge(self, other: "TokenUsage") -> None:
+        """Merge another usage tracker into this one."""
+        self.input_tokens += other.input_tokens
+        self.output_tokens += other.output_tokens
+
+    @property
+    def input_cost(self) -> float:
+        """Calculate input token cost."""
+        return (self.input_tokens / 1_000_000) * INPUT_PRICE_PER_1M
+
+    @property
+    def output_cost(self) -> float:
+        """Calculate output token cost."""
+        return (self.output_tokens / 1_000_000) * OUTPUT_PRICE_PER_1M
+
+    @property
+    def total_cost(self) -> float:
+        """Calculate total cost."""
+        return self.input_cost + self.output_cost
+
+    def __str__(self) -> str:
+        return (
+            f"Tokens: {self.input_tokens:,} in / {self.output_tokens:,} out | "
+            f"Cost: ${self.input_cost:.4f} in + ${self.output_cost:.4f} out = ${self.total_cost:.4f}"
+        )
+
+
 @dataclass
 class EvolutionCandidate:
     """A candidate in the evolution process."""
@@ -33,6 +77,7 @@ class GenerationResult:
     best_candidate: EvolutionCandidate
     average_score: float
     all_scores: list[float] = field(default_factory=list)
+    usage: TokenUsage = field(default_factory=TokenUsage)
 
 
 class QuestionSetEvolutionEngine:
@@ -60,16 +105,28 @@ class QuestionSetEvolutionEngine:
         ]
 
         self.generation_results: list[GenerationResult] = []
+        self.total_usage = TokenUsage()
+
+    def _extract_usage(self, result) -> tuple[int, int]:
+        """Extract input/output tokens from an agent result."""
+        try:
+            usage = result.usage()
+            return usage.request_tokens or 0, usage.response_tokens or 0
+        except Exception:
+            # Fallback if usage not available
+            return 0, 0
 
     async def generate_question_set(
-        self, candidate: EvolutionCandidate
+        self, candidate: EvolutionCandidate, usage: TokenUsage
     ) -> QuestionSetOutput:
         """Generate a question set using the candidate's prompt."""
         result = await question_writer_agent.run(candidate.question_prompt)
+        input_tokens, output_tokens = self._extract_usage(result)
+        usage.add(input_tokens, output_tokens)
         return result.output
 
     async def generate_rubric(
-        self, candidate: EvolutionCandidate
+        self, candidate: EvolutionCandidate, usage: TokenUsage
     ) -> RubricOutput:
         """Generate a rubric for the candidate's question set."""
         if candidate.question_set is None:
@@ -84,10 +141,12 @@ class QuestionSetEvolutionEngine:
             prompt += f"\n\n## Additional Requirements\n{candidate.rubric_prompt_additions}"
 
         result = await rubric_writer_agent.run(prompt)
+        input_tokens, output_tokens = self._extract_usage(result)
+        usage.add(input_tokens, output_tokens)
         return result.output
 
     async def evaluate_candidate(
-        self, candidate: EvolutionCandidate
+        self, candidate: EvolutionCandidate, usage: TokenUsage
     ) -> JudgeFeedback:
         """Evaluate a candidate's question set and rubric."""
         if candidate.question_set is None or candidate.rubric is None:
@@ -99,10 +158,12 @@ class QuestionSetEvolutionEngine:
             candidate.question_prompt,
         )
         result = await judge_agent.run(prompt)
+        input_tokens, output_tokens = self._extract_usage(result)
+        usage.add(input_tokens, output_tokens)
         return result.output
 
     async def mutate_candidate(
-        self, candidate: EvolutionCandidate
+        self, candidate: EvolutionCandidate, usage: TokenUsage
     ) -> MutatedPrompts:
         """Mutate a candidate's prompts based on feedback."""
         if candidate.feedback is None:
@@ -114,20 +175,24 @@ class QuestionSetEvolutionEngine:
             candidate.feedback,
         )
         result = await mutator_agent.run(prompt)
+        input_tokens, output_tokens = self._extract_usage(result)
+        usage.add(input_tokens, output_tokens)
         return result.output
 
-    async def process_candidate(self, candidate: EvolutionCandidate) -> None:
+    async def process_candidate(
+        self, candidate: EvolutionCandidate, usage: TokenUsage
+    ) -> None:
         """Generate, evaluate, and score a candidate."""
         # Generate question set
-        question_output = await self.generate_question_set(candidate)
+        question_output = await self.generate_question_set(candidate, usage)
         candidate.question_set = question_output.question_set
 
         # Generate rubric
-        rubric_output = await self.generate_rubric(candidate)
+        rubric_output = await self.generate_rubric(candidate, usage)
         candidate.rubric = rubric_output.rubric
 
         # Evaluate
-        candidate.feedback = await self.evaluate_candidate(candidate)
+        candidate.feedback = await self.evaluate_candidate(candidate, usage)
         candidate.score = candidate.feedback.scores.overall_average
 
     async def run_generation(self, generation: int) -> GenerationResult:
@@ -136,11 +201,24 @@ class QuestionSetEvolutionEngine:
         print(f"Generation {generation}")
         print(f"{'='*60}")
 
+        # Track usage for this generation
+        gen_usage = TokenUsage()
+
         # Process all candidates in parallel
         print(f"Processing {len(self.population)} candidates...")
+
+        # Create per-candidate usage trackers for parallel execution
+        candidate_usages = [TokenUsage() for _ in self.population]
         await asyncio.gather(
-            *[self.process_candidate(c) for c in self.population]
+            *[
+                self.process_candidate(c, u)
+                for c, u in zip(self.population, candidate_usages)
+            ]
         )
+
+        # Merge all candidate usages
+        for u in candidate_usages:
+            gen_usage.merge(u)
 
         # Sort by score
         self.population.sort(key=lambda c: c.score, reverse=True)
@@ -155,20 +233,30 @@ class QuestionSetEvolutionEngine:
         best = self.population[0]
         self._save_generation(generation, best)
 
+        # Create next generation through tournament selection
+        mutation_usage = TokenUsage()
+        await self._evolve_population(mutation_usage)
+        gen_usage.merge(mutation_usage)
+
+        # Update total usage
+        self.total_usage.merge(gen_usage)
+
+        # Print usage for this generation
+        print(f"\nGeneration {generation} usage: {gen_usage}")
+        print(f"Total usage so far: {self.total_usage}")
+
         result = GenerationResult(
             generation=generation,
             best_candidate=best,
             average_score=sum(scores) / len(scores),
             all_scores=scores,
+            usage=gen_usage,
         )
         self.generation_results.append(result)
 
-        # Create next generation through tournament selection
-        await self._evolve_population()
-
         return result
 
-    async def _evolve_population(self) -> None:
+    async def _evolve_population(self, usage: TokenUsage) -> None:
         """Evolve the population through selection and mutation."""
         # Keep top performers
         survivors = self.population[: self.tournament_size]
@@ -189,7 +277,7 @@ class QuestionSetEvolutionEngine:
             if random.random() < self.mutation_rate:
                 # Mutate this survivor
                 try:
-                    mutated = await self.mutate_candidate(survivor)
+                    mutated = await self.mutate_candidate(survivor, usage)
                     new_population.append(
                         EvolutionCandidate(
                             question_prompt=mutated.question_prompt,
@@ -218,7 +306,7 @@ class QuestionSetEvolutionEngine:
         while len(new_population) < self.population_size:
             survivor = random.choice(survivors)
             try:
-                mutated = await self.mutate_candidate(survivor)
+                mutated = await self.mutate_candidate(survivor, usage)
                 new_population.append(
                     EvolutionCandidate(
                         question_prompt=mutated.question_prompt,
@@ -272,9 +360,20 @@ class QuestionSetEvolutionEngine:
         print(f"Population size: {self.population_size}")
         print(f"Tournament size: {self.tournament_size}")
         print(f"Mutation rate: {self.mutation_rate}")
+        print(f"Pricing: ${INPUT_PRICE_PER_1M}/1M input, ${OUTPUT_PRICE_PER_1M}/1M output")
 
         for gen in range(1, generations + 1):
             await self.run_generation(gen)
+
+        # Print final summary
+        print(f"\n{'='*60}")
+        print("FINAL TOKEN USAGE SUMMARY")
+        print(f"{'='*60}")
+        print(f"Total input tokens:  {self.total_usage.input_tokens:,}")
+        print(f"Total output tokens: {self.total_usage.output_tokens:,}")
+        print(f"Total input cost:    ${self.total_usage.input_cost:.4f}")
+        print(f"Total output cost:   ${self.total_usage.output_cost:.4f}")
+        print(f"TOTAL COST:          ${self.total_usage.total_cost:.4f}")
 
         # Plot results if matplotlib available
         self._plot_results()

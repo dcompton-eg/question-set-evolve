@@ -68,7 +68,7 @@ Be surgical. Make the minimum changes needed to address feedback.
 
 
 mutator_agent = Agent(
-    "openai:gpt-4.1",
+    "anthropic:claude-sonnet-4-5",
     system_prompt=MUTATOR_SYSTEM_PROMPT,
     output_type=MutatedPrompts,
     model_settings={"temperature": 0.8},
