@@ -4,13 +4,11 @@ import argparse
 import asyncio
 import json
 import logging
+import re
+import shutil
 from pathlib import Path
 
-from .evolution.engine import QuestionSetEvolutionEngine, TokenUsage, INPUT_PRICE_PER_1M, OUTPUT_PRICE_PER_1M
-from .agents.question_writer import question_writer_agent
-from .agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
-from .agents.candidate_scorer import candidate_scorer_agent, create_scoring_prompt
-from .models import QuestionSet, ScoringRubric
+from .models import QuestionSet, ScoringRubric, JudgeFeedback
 
 # Set up logging - only show warnings and errors
 logging.basicConfig(
@@ -39,6 +37,10 @@ def extract_usage(result) -> tuple[int, int]:
 
 async def cmd_generate(args: argparse.Namespace) -> None:
     """Generate a single question set and rubric."""
+    from .evolution.engine import TokenUsage
+    from .agents.question_writer import question_writer_agent
+    from .agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
+
     prompt = load_prompt(args.prompt, args.prompt_file)
     total_usage = TokenUsage()
 
@@ -113,6 +115,8 @@ async def cmd_generate(args: argparse.Namespace) -> None:
 
 async def cmd_evolve(args: argparse.Namespace) -> None:
     """Run the evolution process."""
+    from .evolution.engine import QuestionSetEvolutionEngine
+
     prompt = load_prompt(args.prompt, args.prompt_file)
 
     output_dir = Path(args.output) if args.output else Path("output")
@@ -139,6 +143,8 @@ async def cmd_evolve(args: argparse.Namespace) -> None:
 
 async def cmd_score(args: argparse.Namespace) -> None:
     """Score a candidate transcript using a rubric."""
+    from .agents.candidate_scorer import candidate_scorer_agent, create_scoring_prompt
+
     # Load rubric
     rubric_path = Path(args.rubric)
     rubric_data = json.loads(rubric_path.read_text())
@@ -192,6 +198,106 @@ async def cmd_score(args: argparse.Namespace) -> None:
     print(f"\nSaved evaluation to {eval_path}")
 
 
+def cmd_select_best(args: argparse.Namespace) -> None:
+    """Select the best generation and create best_ files with PDF."""
+    from .pdf_generator import generate_question_set_pdf
+
+    output_dir = Path(args.output) if args.output else Path("output")
+
+    if not output_dir.exists():
+        print(f"Error: Output directory '{output_dir}' does not exist")
+        return
+
+    # Find all generation feedback files
+    feedback_pattern = re.compile(r"generation_(\d+)_feedback\.json")
+    generations: list[tuple[int, float, Path]] = []
+
+    for feedback_file in output_dir.glob("generation_*_feedback.json"):
+        match = feedback_pattern.match(feedback_file.name)
+        if match:
+            gen_num = int(match.group(1))
+            try:
+                feedback_data = json.loads(feedback_file.read_text())
+                feedback = JudgeFeedback.model_validate(feedback_data)
+                score = feedback.scores.overall_average
+                generations.append((gen_num, score, feedback_file))
+            except Exception as e:
+                print(f"Warning: Could not parse {feedback_file}: {e}")
+
+    if not generations:
+        print("No generation feedback files found in output directory")
+        return
+
+    # Sort by score descending
+    generations.sort(key=lambda x: x[1], reverse=True)
+
+    print(f"{'='*60}")
+    print("Generation Scores")
+    print(f"{'='*60}")
+    for gen_num, score, _ in generations:
+        marker = " <-- BEST" if gen_num == generations[0][0] else ""
+        print(f"  Generation {gen_num}: {score:.1f}{marker}")
+
+    best_gen, best_score, _ = generations[0]
+    print(f"\nBest generation: {best_gen} (score: {best_score:.1f})")
+
+    # Copy best files
+    print(f"\n{'='*60}")
+    print("Copying Best Files")
+    print(f"{'='*60}")
+
+    questions_src = output_dir / f"generation_{best_gen}_questions.json"
+    rubric_src = output_dir / f"generation_{best_gen}_rubric.json"
+    prompt_src = output_dir / f"generation_{best_gen}_question_prompt.txt"
+
+    questions_dst = output_dir / "best_questions.json"
+    rubric_dst = output_dir / "best_rubric.json"
+    prompt_dst = output_dir / "best_question_prompt.txt"
+
+    if questions_src.exists():
+        shutil.copy(questions_src, questions_dst)
+        print(f"Copied {questions_src.name} -> {questions_dst.name}")
+    else:
+        print(f"Warning: {questions_src.name} not found")
+
+    if rubric_src.exists():
+        shutil.copy(rubric_src, rubric_dst)
+        print(f"Copied {rubric_src.name} -> {rubric_dst.name}")
+    else:
+        print(f"Warning: {rubric_src.name} not found")
+
+    if prompt_src.exists():
+        shutil.copy(prompt_src, prompt_dst)
+        print(f"Copied {prompt_src.name} -> {prompt_dst.name}")
+
+    # Generate PDF
+    print(f"\n{'='*60}")
+    print("Generating PDF")
+    print(f"{'='*60}")
+
+    if questions_dst.exists():
+        try:
+            questions_data = json.loads(questions_dst.read_text())
+            question_set = QuestionSet.model_validate(questions_data)
+
+            pdf_path = output_dir / "best_questions.pdf"
+            generate_question_set_pdf(question_set, pdf_path)
+            print(f"Generated PDF: {pdf_path}")
+        except Exception as e:
+            print(f"Error generating PDF: {e}")
+    else:
+        print("Cannot generate PDF: best_questions.json not found")
+
+    print(f"\n{'='*60}")
+    print("Done!")
+    print(f"{'='*60}")
+    print(f"\nOutput files:")
+    print(f"  {questions_dst}")
+    print(f"  {rubric_dst}")
+    if (output_dir / "best_questions.pdf").exists():
+        print(f"  {output_dir / 'best_questions.pdf'}")
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -237,6 +343,12 @@ def main() -> None:
     score_parser.add_argument("--candidate-id", "-c", default="candidate", help="Candidate identifier")
     score_parser.add_argument("--output", "-o", help="Output directory", default="output")
 
+    # Select-best command
+    select_best_parser = subparsers.add_parser(
+        "select-best", help="Select the best generation and create best_ files with PDF"
+    )
+    select_best_parser.add_argument("--output", "-o", help="Output directory", default="output")
+
     args = parser.parse_args()
 
     if args.command == "generate":
@@ -245,6 +357,8 @@ def main() -> None:
         asyncio.run(cmd_evolve(args))
     elif args.command == "score":
         asyncio.run(cmd_score(args))
+    elif args.command == "select-best":
+        cmd_select_best(args)
 
 
 if __name__ == "__main__":

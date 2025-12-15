@@ -115,3 +115,96 @@ class CandidateEvaluation(BaseModel):
         default="lean_no_hire", description="One of: strong_hire, hire, lean_no_hire, no_hire"
     )
     summary: str = Field(default="", description="Brief narrative summary of the candidate")
+
+
+class QualityScores(BaseModel):
+    """Quality scores for a question set and rubric pair."""
+
+    # Question Set Quality
+    question_clarity: int = Field(
+        default=50, ge=0, le=100, description="How clear and unambiguous are the questions"
+    )
+    question_relevance: int = Field(
+        default=50, ge=0, le=100, description="How relevant are questions to the target role"
+    )
+    question_depth: int = Field(
+        default=50, ge=0, le=100, description="How well questions allow candidates to show expertise"
+    )
+    question_coverage: int = Field(
+        default=50, ge=0, le=100, description="How well questions cover important skill areas"
+    )
+    question_fairness: int = Field(
+        default=50, ge=0, le=100, description="How fair and unbiased are the questions"
+    )
+
+    # Rubric Quality
+    rubric_objectivity: int = Field(
+        default=50, ge=0, le=100, description="How objective and measurable are the criteria"
+    )
+    rubric_discrimination: int = Field(
+        default=50, ge=0, le=100, description="How well the rubric distinguishes skill levels"
+    )
+    rubric_calibration: int = Field(
+        default=50, ge=0, le=100, description="How well examples help calibrate scoring"
+    )
+    rubric_llm_compatibility: int = Field(
+        default=50, ge=0, le=100, description="How well rubric works for LLM-based scoring"
+    )
+
+    # Co-evolution Quality
+    alignment: int = Field(
+        default=50, ge=0, le=100, description="How well questions and rubric align"
+    )
+    completeness: int = Field(
+        default=50, ge=0, le=100, description="Whether rubric covers all questions adequately"
+    )
+
+    @property
+    def question_average(self) -> float:
+        """Average score for question quality."""
+        return (
+            self.question_clarity
+            + self.question_relevance
+            + self.question_depth
+            + self.question_coverage
+            + self.question_fairness
+        ) / 5
+
+    @property
+    def rubric_average(self) -> float:
+        """Average score for rubric quality."""
+        return (
+            self.rubric_objectivity
+            + self.rubric_discrimination
+            + self.rubric_calibration
+            + self.rubric_llm_compatibility
+        ) / 4
+
+    @property
+    def overall_average(self) -> float:
+        """Overall average across all dimensions."""
+        return (
+            self.question_clarity
+            + self.question_relevance
+            + self.question_depth
+            + self.question_coverage
+            + self.question_fairness
+            + self.rubric_objectivity
+            + self.rubric_discrimination
+            + self.rubric_calibration
+            + self.rubric_llm_compatibility
+            + self.alignment
+            + self.completeness
+        ) / 11
+
+
+class JudgeFeedback(BaseModel):
+    """Complete feedback from the judge agent."""
+
+    scores: QualityScores = Field(default_factory=QualityScores, description="Numerical quality scores")
+    strengths: str = Field(
+        default="", description="Brief summary of what works well in the questions and rubric"
+    )
+    improvements: str = Field(
+        default="", description="Key issues and specific suggestions for improvement"
+    )

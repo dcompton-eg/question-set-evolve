@@ -5,3 +5,4 @@ openai>=1.0.0
 matplotlib>=3.7.0
 python-dotenv>=1.0.0
 logfire>=0.30.0
+reportlab>=4.0.0

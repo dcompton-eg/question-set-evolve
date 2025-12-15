@@ -1,0 +1,67 @@
+# Interview Question Set Design Prompt
+
+## Role Being Hired For
+Senior React Native Mobile Engineer
+
+## Interview Context
+**This is a recruiter phone screen.**
+- Questions will be asked by a non-technical recruiter reading from a script
+- Questions must be simple to read aloud and understand
+- 10-minute phone screen
+- Scoring will be done by LLM-as-judge from the transcript
+
+## Candidate Level
+Senior (4+ years React Native experience, 6+ years total engineering experience)
+
+## What We Want to Learn
+- Whether the candidate has genuine hands-on React Native experience (not just React web)
+- Understanding of React Native's architecture (JS thread, native thread, bridge)
+- Experience shipping mobile apps to App Store and/or Play Store
+- Knowledge of mobile-specific challenges (performance, platform differences)
+- Ability to explain technical concepts clearly
+
+## Key React Native Concepts
+- Bridge architecture and JS/native communication
+- JS thread vs UI thread and performance implications
+- Native modules and when to use them
+- Platform-specific code (iOS vs Android differences)
+- Performance optimization (FlatList, re-renders, Hermes engine)
+- Mobile debugging tools (Flipper, React DevTools)
+
+## Question Requirements
+- Exactly 3 scripted questions
+- No follow-up questions (recruiter reads questions as-is)
+- Questions must be easy for a non-technical person to read aloud
+- Questions should allow candidates to demonstrate real mobile app experience
+- Avoid jargon-heavy questions that are hard to pronounce or understand
+- Questions should fit within ~10 minutes total (about 3 minutes per question)
+
+## Red Flags (for LLM scoring rubric)
+- Cannot explain what mobile apps they've built with React Native
+- Vague or generic answers that could apply to React web apps
+- Confuses React Native with React web without acknowledging differences
+- No mention of apps shipped to App Store or Play Store
+- Cannot articulate React Native-specific concepts (bridge, native modules)
+- No understanding of iOS vs Android platform differences
+
+## Green Flags (for LLM scoring rubric)
+- Specific examples from real mobile apps shipped to production
+- Clear explanation of React Native-specific features (bridge, native modules, Hermes)
+- Demonstrates understanding of mobile-specific challenges (performance, offline, battery)
+- Can explain the difference between React web and React Native
+- Mentions React Native debugging tools (Flipper, Metro bundler)
+- Discusses platform-specific considerations (iOS vs Android)
+- Provides quantifiable metrics (app ratings, crash rates, startup time, downloads)
+
+## Output Format
+Provide a question set with:
+- Exactly 3 clear, scripted questions
+- Questions phrased for a non-technical recruiter to read aloud
+- Time allocation (should sum to ~10 minutes)
+- What to look for in answers (for LLM scoring)
+
+The LLM scoring rubric should include:
+- What a strong answer looks like
+- What a weak answer looks like
+- Specific signals to listen for
+- React Native-specific concepts that indicate genuine mobile experience
