@@ -93,23 +93,11 @@ class JudgeFeedback(BaseModel):
     """Complete feedback from the judge agent."""
 
     scores: QualityScores = Field(default_factory=QualityScores, description="Numerical quality scores")
-    question_strengths: list[str] = Field(
-        default_factory=list, description="What works well in the question set"
+    strengths: str = Field(
+        default="", description="Brief summary of what works well in the questions and rubric"
     )
-    question_weaknesses: list[str] = Field(
-        default_factory=list, description="Issues with the question set"
-    )
-    rubric_strengths: list[str] = Field(
-        default_factory=list, description="What works well in the rubric"
-    )
-    rubric_weaknesses: list[str] = Field(
-        default_factory=list, description="Issues with the rubric"
-    )
-    alignment_issues: list[str] = Field(
-        default_factory=list, description="Ways questions and rubric could be better aligned"
-    )
-    improvement_suggestions: list[str] = Field(
-        default_factory=list, description="Specific actionable improvements"
+    improvements: str = Field(
+        default="", description="Key issues and specific suggestions for improvement"
     )
 
 
@@ -180,13 +168,10 @@ Total Time: {question_set.total_time_minutes} minutes
 
 ## Your Task
 1. Score each quality dimension (0-100)
-2. Identify strengths and weaknesses
-3. Note alignment issues between questions and rubric
-4. Provide specific, actionable improvement suggestions
+2. Summarize what works well (strengths)
+3. Describe key issues and how to improve them (improvements)
 
-Focus on whether these materials would work well in practice for:
-- Human interviewers conducting the interview
-- LLM judges scoring candidate transcript answers
+Focus on whether these materials would work well in practice for human interviewers and LLM judges.
 """
 
 

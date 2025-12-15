@@ -131,23 +131,11 @@ def create_mutation_prompt(
 ### Weakest Areas (prioritize these)
 {chr(10).join(f"- {dim}: {score}" for dim, score in weakest)}
 
-### Question Strengths
-{chr(10).join(f"- {s}" for s in feedback.question_strengths)}
+### Strengths
+{feedback.strengths}
 
-### Question Weaknesses
-{chr(10).join(f"- {w}" for w in feedback.question_weaknesses)}
-
-### Rubric Strengths
-{chr(10).join(f"- {s}" for s in feedback.rubric_strengths)}
-
-### Rubric Weaknesses
-{chr(10).join(f"- {w}" for w in feedback.rubric_weaknesses)}
-
-### Alignment Issues
-{chr(10).join(f"- {i}" for i in feedback.alignment_issues)}
-
-### Improvement Suggestions
-{chr(10).join(f"- {s}" for s in feedback.improvement_suggestions)}
+### Issues and Suggested Improvements
+{feedback.improvements}
 
 ## Your Task
 1. Create an improved question prompt that addresses weaknesses while keeping strengths
