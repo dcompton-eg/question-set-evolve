@@ -298,6 +298,73 @@ def cmd_select_best(args: argparse.Namespace) -> None:
         print(f"  {output_dir / 'best_questions.pdf'}")
 
 
+def cmd_pdf(args: argparse.Namespace) -> None:
+    """Generate a PDF from a question set JSON file."""
+    from .pdf_generator import generate_question_set_pdf
+
+    output_dir = Path(args.output) if args.output else Path("output")
+
+    # Determine the questions file to use
+    if args.questions:
+        # Direct path to questions file
+        questions_path = Path(args.questions)
+        if not questions_path.exists():
+            print(f"Error: Questions file '{questions_path}' not found")
+            return
+        # Default PDF output name based on input file
+        default_pdf_name = questions_path.stem + ".pdf"
+    elif args.generation is not None:
+        # Generation number specified
+        questions_path = output_dir / f"generation_{args.generation}_questions.json"
+        if not questions_path.exists():
+            print(f"Error: Generation {args.generation} questions file not found at '{questions_path}'")
+            return
+        default_pdf_name = f"generation_{args.generation}_questions.pdf"
+    else:
+        print("Error: Must specify either --generation or --questions")
+        return
+
+    # Determine output PDF path
+    if args.pdf_output:
+        pdf_path = Path(args.pdf_output)
+    else:
+        pdf_path = output_dir / default_pdf_name
+
+    # Ensure output directory exists
+    pdf_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Load and validate questions
+    print(f"{'='*60}")
+    print("Generating PDF")
+    print(f"{'='*60}")
+    print(f"Source: {questions_path}")
+
+    try:
+        questions_data = json.loads(questions_path.read_text())
+        question_set = QuestionSet.model_validate(questions_data)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in '{questions_path}': {e}")
+        return
+    except Exception as e:
+        print(f"Error: Could not parse question set: {e}")
+        return
+
+    # Generate PDF
+    try:
+        generate_question_set_pdf(question_set, pdf_path)
+        print(f"Generated: {pdf_path}")
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        return
+
+    print(f"\n{'='*60}")
+    print("Done!")
+    print(f"{'='*60}")
+    print(f"\nQuestion Set: {question_set.title}")
+    print(f"Questions: {len(question_set.questions)}")
+    print(f"PDF: {pdf_path}")
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -349,6 +416,21 @@ def main() -> None:
     )
     select_best_parser.add_argument("--output", "-o", help="Output directory", default="output")
 
+    # PDF command
+    pdf_parser = subparsers.add_parser(
+        "pdf", help="Generate a PDF from a question set"
+    )
+    pdf_parser.add_argument(
+        "--generation", "-g", type=int, help="Generation number to generate PDF for"
+    )
+    pdf_parser.add_argument(
+        "--questions", "-q", help="Path to questions JSON file (alternative to --generation)"
+    )
+    pdf_parser.add_argument("--output", "-o", help="Output directory", default="output")
+    pdf_parser.add_argument(
+        "--pdf-output", "-p", help="Output PDF file path (overrides default naming)"
+    )
+
     args = parser.parse_args()
 
     if args.command == "generate":
@@ -359,6 +441,8 @@ def main() -> None:
         asyncio.run(cmd_score(args))
     elif args.command == "select-best":
         cmd_select_best(args)
+    elif args.command == "pdf":
+        cmd_pdf(args)
 
 
 if __name__ == "__main__":
