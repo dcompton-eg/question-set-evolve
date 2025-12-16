@@ -96,6 +96,19 @@ This produces:
 - Hiring recommendation (Strong Hire / Hire / Lean No Hire / No Hire)
 - Narrative summary of the candidate's performance
 
+### Select Best Generation and Generate PDF
+
+After running evolution, select the best-scoring generation and create a PDF of the questions:
+
+```bash
+question-evolve select-best --output output
+```
+
+This will:
+- Scan all generation feedback files and rank by score
+- Copy the best generation's files to `best_questions.json`, `best_rubric.json`, and `best_question_prompt.txt`
+- Generate a formatted PDF at `best_questions.pdf`
+
 ## Architecture
 
 The project follows a modular, agent-based architecture:
@@ -139,6 +152,7 @@ question_set_evolve/
 ├── evolution/        # Evolution engine
 │   └── engine.py
 ├── models.py         # Pydantic data models
+├── pdf_generator.py  # PDF output generation
 └── cli.py            # Command-line interface
 prompts/              # Example prompts
 setup.py              # Package configuration
@@ -156,17 +170,20 @@ setup.py              # Package configuration
 - anthropic (v0.39+) - Claude API client
 - openai (v1.0+) - OpenAI API support (optional)
 - matplotlib - Evolution progress visualization
+- reportlab (v4.0+) - PDF generation
 - logfire (v0.30+) - Observability (optional)
 
 ## Output
 
-The system saves all artifacts as JSON:
+The system saves all artifacts:
 
-- Generated questions and rubrics
+- Generated questions and rubrics (JSON)
 - Evolution history per generation
 - Judge feedback and scores
 - Candidate evaluations
 - Evolution progress plots (PNG)
+- Best generation files (`best_questions.json`, `best_rubric.json`)
+- Formatted question set PDF (`best_questions.pdf`)
 
 ## License
 
