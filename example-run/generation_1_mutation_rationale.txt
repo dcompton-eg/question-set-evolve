@@ -1,0 +1,32 @@
+## Mutations Applied
+
+### Addressing Rubric Objectivity (78 → improved)
+**Problem**: Rubric criteria were likely too subjective and dependent on interviewer interpretation.
+**Solution**: 
+- Added "Transcript-matchable indicators" requirement to force concrete, observable signals
+- Specified "minimum viable evidence of competence" for each question (what MUST be present)
+- Added guidance to define criteria in terms of observable transcript elements, not general impressions
+- Replaced vague language ("demonstrates knowledge") with specific requirements ("mentions specific feature AND explains purpose")
+
+### Addressing Rubric LLM Compatibility (80 → improved)
+**Problem**: Rubric criteria may not have been specific enough for LLM matching against transcripts.
+**Solution**:
+- Added requirement for realistic quote snippets at each score level (5, 3, 1) so LLM has concrete examples to match
+- Specified exact patterns/phrases the LLM should detect (e.g., "mentions specific Go library by name")
+- Added guidance to make score anchors comparative and measurable (Score 3 vs 5 differences)
+- Required mapping between rubric criteria and actual transcript language patterns
+
+### Addressing Question Coverage (82 → improved)
+**Problem**: Questions may not have comprehensively covered all required skill areas.
+**Solution**:
+- Explicitly added three required coverage areas to question prompt: (1) hands-on project experience, (2) Go-specific concepts, (3) production/operational considerations
+- Added requirement for "explicit coverage map" in output showing which question addresses which learning goal
+- Added rubric guidance to verify coverage is actually tested (with note if question fails its intended purpose)
+- Strengthened red/green flags to include coverage indicators (e.g., "mentions operational aspects" as green flag)
+
+### Preservation of Strengths
+- Kept all existing question requirements that scored 85+ (clarity, relevance, fairness)
+- Maintained the 3-question structure and 10-minute constraint
+- Preserved the focus on non-technical recruiter readability
+- Kept the LLM-as-judge scoring approach
+- Maintained the red/green flag framework (only enhanced it)

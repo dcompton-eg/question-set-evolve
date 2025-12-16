@@ -1,0 +1,26 @@
+## Additional Rubric Guidance for LLM Scoring
+
+### Objective Criteria Specification
+For each question, define criteria in terms of **observable transcript elements** rather than general impressions:
+- Instead of "demonstrates Go knowledge," specify: "mentions specific Go feature (e.g., goroutines, channels, defer, interfaces) AND explains its purpose in their project"
+- Instead of "production experience," specify: "mentions measurable scale (e.g., QPS, number of users, data volume) OR operational concern (e.g., latency, memory usage, monitoring)"
+
+### LLM Transcript Matching
+Provide concrete scoring anchors that can be matched against candidate speech:
+- **Score 5 examples**: Include 2-3 realistic quote snippets showing exceptional answers
+- **Score 1 examples**: Include 2-3 realistic quote snippets showing inadequate answers
+- **Score 3 examples**: Include 2-3 realistic quote snippets showing baseline competence
+- Specify exact phrases or patterns the LLM should detect (e.g., "mentions a specific Go library by name," "describes a failure and the fix," "explains a trade-off")
+
+### Discrimination Clarity
+For each criterion, specify what distinguishes each score level with concrete differences:
+- Score 1 vs 3: What additional specificity or depth must appear?
+- Score 3 vs 5: What demonstrates mastery vs. baseline competence?
+- Use comparative language: "Score 3 includes X, Score 5 includes X + Y + Z"
+
+### Coverage Verification
+Ensure the rubric explicitly maps to the three coverage areas:
+- Question 1 rubric should assess: hands-on project experience (with specificity/scale indicators)
+- Question 2 rubric should assess: Go-specific concept understanding (with why/trade-off indicators)
+- Question 3 rubric should assess: production/operational thinking (with concrete challenge/solution indicators)
+- Include a note if a question fails to adequately test its intended coverage area

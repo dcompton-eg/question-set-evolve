@@ -1,0 +1,357 @@
+python -m question_set_evolve.cli evolve --prompt-file prompts/golang_backend.txt --generations 10 --children 3 --output output
+Starting (1+λ) Evolution Strategy
+Generations: 10
+Children per generation (λ): 3
+Initial parent: [P0]
+Pricing: $0.8/1M input, $4.0/1M output
+
+============================================================
+Generation 1
+============================================================
+
+[INIT] Evaluating initial parent [P0]...
+[INIT] Parent [P0] score: 84.5
+
+[PARENT] Current champion: [P0] score=84.5
+
+[MUTATE] Generating 3 children from parent [P0]...
+         [C1] from [P0]
+         [C2] from [P0]
+         [C3] from [P0]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 1 results:
+         Parent [P0]: 84.5
+         Child  [C3] (from P0): 86.7 <-- BEST CHILD
+         Child  [C2] (from P0): 85.8
+         Child  [C1] (from P0): 83.4
+
+[SELECT] Comparing best child [C3] vs parent [P0]...
+         ✓ Child [C3] beats parent (86.7 > 84.5)
+         [C3] is promoted to new parent!
+Saved generation 1 to output
+
+[USAGE] Generation 1: Tokens: 56,744 in / 54,072 out | Cost: $0.0454 in + $0.2163 out = $0.2617
+[USAGE] Total so far: Tokens: 56,744 in / 54,072 out | Cost: $0.0454 in + $0.2163 out = $0.2617
+
+============================================================
+Generation 2
+============================================================
+
+[PARENT] Current champion: [C3] score=86.7
+         Lineage: P0 -> C3
+
+[MUTATE] Generating 3 children from parent [C3]...
+         [C4] from [C3]
+         [C5] from [C3]
+         [C6] from [C3]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 2 results:
+         Parent [C3]: 86.7
+         Child  [C6] (from C3): 89.1 <-- BEST CHILD
+         Child  [C5] (from C3): 86.8
+         Child  [C4] (from C3): 83.3
+
+[SELECT] Comparing best child [C6] vs parent [C3]...
+         ✓ Child [C6] beats parent (89.1 > 86.7)
+         [C6] is promoted to new parent!
+Saved generation 2 to output
+
+[USAGE] Generation 2: Tokens: 53,750 in / 48,688 out | Cost: $0.0430 in + $0.1948 out = $0.2378
+[USAGE] Total so far: Tokens: 110,494 in / 102,760 out | Cost: $0.0884 in + $0.4110 out = $0.4994
+
+============================================================
+Generation 3
+============================================================
+
+[PARENT] Current champion: [C6] score=89.1
+         Lineage: C3 -> C6
+
+[MUTATE] Generating 3 children from parent [C6]...
+         [C7] from [C6]
+         [C8] from [C6]
+         [C9] from [C6]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 3 results:
+         Parent [C6]: 89.1
+         Child  [C8] (from C6): 88.6 <-- BEST CHILD
+         Child  [C9] (from C6): 86.0
+         Child  [C7] (from C6): 81.6
+
+[SELECT] Comparing best child [C8] vs parent [C6]...
+         ✗ Parent [C6] survives (no child beat 89.1)
+Saved generation 3 to output
+
+[USAGE] Generation 3: Tokens: 65,893 in / 57,795 out | Cost: $0.0527 in + $0.2312 out = $0.2839
+[USAGE] Total so far: Tokens: 176,387 in / 160,555 out | Cost: $0.1411 in + $0.6422 out = $0.7833
+
+============================================================
+Generation 4
+============================================================
+
+[PARENT] Current champion: [C6] score=89.1
+         Lineage: C3 -> C6
+
+[MUTATE] Generating 3 children from parent [C6]...
+         [C10] from [C6]
+         [C11] from [C6]
+         [C12] from [C6]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 4 results:
+         Parent [C6]: 89.1
+         Child  [C12] (from C6): 88.4 <-- BEST CHILD
+         Child  [C10] (from C6): 84.5
+         Child  [C11] (from C6): 83.4
+
+[SELECT] Comparing best child [C12] vs parent [C6]...
+         ✗ Parent [C6] survives (no child beat 89.1)
+Saved generation 4 to output
+
+[USAGE] Generation 4: Tokens: 61,108 in / 57,546 out | Cost: $0.0489 in + $0.2302 out = $0.2791
+[USAGE] Total so far: Tokens: 237,495 in / 218,101 out | Cost: $0.1900 in + $0.8724 out = $1.0624
+
+============================================================
+Generation 5
+============================================================
+
+[PARENT] Current champion: [C6] score=89.1
+         Lineage: C3 -> C6
+
+[MUTATE] Generating 3 children from parent [C6]...
+         [C13] from [C6]
+         [C14] from [C6]
+         [C15] from [C6]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 5 results:
+         Parent [C6]: 89.1
+         Child  [C13] (from C6): 87.5 <-- BEST CHILD
+         Child  [C14] (from C6): 86.6
+         Child  [C15] (from C6): 86.1
+
+[SELECT] Comparing best child [C13] vs parent [C6]...
+         ✗ Parent [C6] survives (no child beat 89.1)
+Saved generation 5 to output
+
+[USAGE] Generation 5: Tokens: 63,797 in / 57,356 out | Cost: $0.0510 in + $0.2294 out = $0.2805
+[USAGE] Total so far: Tokens: 301,292 in / 275,457 out | Cost: $0.2410 in + $1.1018 out = $1.3429
+
+============================================================
+Generation 6
+============================================================
+
+[PARENT] Current champion: [C6] score=89.1
+         Lineage: C3 -> C6
+
+[MUTATE] Generating 3 children from parent [C6]...
+         [C16] from [C6]
+         [C17] from [C6]
+         [C18] from [C6]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 6 results:
+         Parent [C6]: 89.1
+         Child  [C17] (from C6): 88.5 <-- BEST CHILD
+         Child  [C16] (from C6): 85.0
+         Child  [C18] (from C6): 83.6
+
+[SELECT] Comparing best child [C17] vs parent [C6]...
+         ✗ Parent [C6] survives (no child beat 89.1)
+Saved generation 6 to output
+
+[USAGE] Generation 6: Tokens: 62,290 in / 53,512 out | Cost: $0.0498 in + $0.2140 out = $0.2639
+[USAGE] Total so far: Tokens: 363,582 in / 328,969 out | Cost: $0.2909 in + $1.3159 out = $1.6067
+
+============================================================
+Generation 7
+============================================================
+
+[PARENT] Current champion: [C6] score=89.1
+         Lineage: C3 -> C6
+
+[MUTATE] Generating 3 children from parent [C6]...
+         [C19] from [C6]
+         [C20] from [C6]
+         [C21] from [C6]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 7 results:
+         Parent [C6]: 89.1
+         Child  [C20] (from C6): 86.6 <-- BEST CHILD
+         Child  [C21] (from C6): 83.9
+         Child  [C19] (from C6): 76.3
+
+[SELECT] Comparing best child [C20] vs parent [C6]...
+         ✗ Parent [C6] survives (no child beat 89.1)
+Saved generation 7 to output
+
+[USAGE] Generation 7: Tokens: 62,575 in / 60,714 out | Cost: $0.0501 in + $0.2429 out = $0.2929
+[USAGE] Total so far: Tokens: 426,157 in / 389,683 out | Cost: $0.3409 in + $1.5587 out = $1.8997
+
+============================================================
+Generation 8
+============================================================
+
+[PARENT] Current champion: [C6] score=89.1
+         Lineage: C3 -> C6
+
+[MUTATE] Generating 3 children from parent [C6]...
+         [C22] from [C6]
+         [C23] from [C6]
+         [C24] from [C6]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 8 results:
+         Parent [C6]: 89.1
+         Child  [C22] (from C6): 89.3 <-- BEST CHILD
+         Child  [C23] (from C6): 88.3
+         Child  [C24] (from C6): 84.8
+
+[SELECT] Comparing best child [C22] vs parent [C6]...
+         ✓ Child [C22] beats parent (89.3 > 89.1)
+         [C22] is promoted to new parent!
+Saved generation 8 to output
+
+[USAGE] Generation 8: Tokens: 61,347 in / 54,814 out | Cost: $0.0491 in + $0.2193 out = $0.2683
+[USAGE] Total so far: Tokens: 487,504 in / 444,497 out | Cost: $0.3900 in + $1.7780 out = $2.1680
+
+============================================================
+Generation 9
+============================================================
+
+[PARENT] Current champion: [C22] score=89.3
+         Lineage: C6 -> C22
+
+[MUTATE] Generating 3 children from parent [C22]...
+         [C25] from [C22]
+         [C26] from [C22]
+         [C27] from [C22]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 9 results:
+         Parent [C22]: 89.3
+         Child  [C26] (from C22): 88.2 <-- BEST CHILD
+         Child  [C25] (from C22): 87.0
+         Child  [C27] (from C22): 87.0
+
+[SELECT] Comparing best child [C26] vs parent [C22]...
+         ✗ Parent [C22] survives (no child beat 89.3)
+Saved generation 9 to output
+
+[USAGE] Generation 9: Tokens: 71,328 in / 54,935 out | Cost: $0.0571 in + $0.2197 out = $0.2768
+[USAGE] Total so far: Tokens: 558,832 in / 499,432 out | Cost: $0.4471 in + $1.9977 out = $2.4448
+
+============================================================
+Generation 10
+============================================================
+
+[PARENT] Current champion: [C22] score=89.3
+         Lineage: C6 -> C22
+
+[MUTATE] Generating 3 children from parent [C22]...
+         [C28] from [C22]
+         [C29] from [C22]
+         [C30] from [C22]
+
+[EVAL] Evaluating 3 children...
+
+[SCORES] Generation 10 results:
+         Parent [C22]: 89.3
+         Child  [C29] (from C22): 90.1 <-- BEST CHILD
+         Child  [C28] (from C22): 90.0
+         Child  [C30] (from C22): 89.2
+
+[SELECT] Comparing best child [C29] vs parent [C22]...
+         ✓ Child [C29] beats parent (90.1 > 89.3)
+         [C29] is promoted to new parent!
+Saved generation 10 to output
+
+[USAGE] Generation 10: Tokens: 85,039 in / 57,679 out | Cost: $0.0680 in + $0.2307 out = $0.2987
+[USAGE] Total so far: Tokens: 643,871 in / 557,111 out | Cost: $0.5151 in + $2.2284 out = $2.7435
+
+============================================================
+EVOLUTION COMPLETE
+============================================================
+
+[WINNER] Final champion: [C29] score=90.1
+[LINEAGE] P0 -> C3 -> C6 -> C22 -> C29
+
+[HISTORY] Score progression:
+         Gen 1: [C3] = 86.7
+         Gen 2: [C6] = 89.1
+         Gen 3: [C6] = 89.1
+         Gen 4: [C6] = 89.1
+         Gen 5: [C6] = 89.1
+         Gen 6: [C6] = 89.1
+         Gen 7: [C6] = 89.1
+         Gen 8: [C22] = 89.3
+         Gen 9: [C22] = 89.3
+         Gen 10: [C29] = 90.1
+
+============================================================
+TOKEN USAGE SUMMARY
+============================================================
+Total input tokens:  643,871
+Total output tokens: 557,111
+Total input cost:    $0.5151
+Total output cost:   $2.2284
+TOTAL COST:          $2.7435
+Saved evolution plot to output/evolution_progress.png
+
+============================================================
+Evolution Complete!
+============================================================
+
+Generations: 10
+Final best score: 90.1
+Score improvement: +3.4
+
+python -m question_set_evolve.cli select-best --output output
+============================================================
+Generation Scores
+============================================================
+  Generation 10: 90.1 <-- BEST
+  Generation 9: 89.3
+  Generation 8: 89.3
+  Generation 4: 89.1
+  Generation 7: 89.1
+  Generation 3: 89.1
+  Generation 2: 89.1
+  Generation 6: 89.1
+  Generation 5: 89.1
+  Generation 1: 86.7
+
+Best generation: 10 (score: 90.1)
+
+============================================================
+Copying Best Files
+============================================================
+Copied generation_10_questions.json -> best_questions.json
+Copied generation_10_rubric.json -> best_rubric.json
+Copied generation_10_question_prompt.txt -> best_question_prompt.txt
+
+============================================================
+Generating PDF
+============================================================
+Generated PDF: output/best_questions.pdf
+
+============================================================
+Done!
+============================================================
+
+Output files:
+  output/best_questions.json
+  output/best_rubric.json
+  output/best_questions.pdf

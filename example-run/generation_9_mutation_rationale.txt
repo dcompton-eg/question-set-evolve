@@ -1,0 +1,92 @@
+## Mutations Applied
+
+### 1. **Addressing Rubric Objectivity (82 → improved)**
+
+**Problem**: Rubric had good structure but criterion definitions were still somewhat subjective and open to interpretation by LLMs.
+
+**Solution**: 
+- Added **explicit decision tree** (Transcript-Matchable Scoring Rules) that LLMs can follow mechanically
+- Converted all criteria to use **observable, matchable patterns** (e.g., "contains measurable context OR specific Go terminology" rather than "demonstrates understanding")
+- Created **concrete pattern lists** for what LLM should search for (measurability keywords, specificity indicators, agency markers)
+- Added **Ambiguity Resolution rules** so LLM knows how to handle edge cases (non-standard terminology, equivalent approaches)
+
+**Impact**: Rubric is now more algorithmic—LLMs can score more consistently by following the decision tree rather than interpreting subjective language.
+
+---
+
+### 2. **Addressing Question Fairness (85 → improved)**
+
+**Problem**: Questions were well-designed but had implicit biases that could disadvantage candidates from smaller companies, different regions, or non-traditional backgrounds.
+
+**Solution**:
+- Added **Fairness Guardrails section** to question prompt with specific language recommendations:
+  - Use "service" instead of "microservice" (de-gates enterprise jargon)
+  - Use "monitoring tool" instead of specific tools (avoids region/vendor bias)
+  - Explicitly accept "any scale" and "any project type"
+  - Changed "Tell me about your most impressive project" → "Tell me about a project you remember" (reduces anxiety bias)
+- Added **fairness notes to each question structure** explaining what NOT to penalize
+- Updated MVEC to explicitly state: "Project type/scale does NOT determine score"
+- Added **Fairness Override Rules for LLM** that explicitly forbid penalizing based on company size, framework choice, or career path
+
+**Impact**: Same questions now explicitly welcome diverse backgrounds. Scoring is blind to project context (size, company, framework) and focused only on technical reasoning.
+
+---
+
+### 3. **Addressing Rubric LLM Compatibility (85 → improved)**
+
+**Problem**: Rubric had good examples but LLM might struggle to match real candidate answers to abstract criteria.
+
+**Solution**:
+- Added **Criterion 1: Specificity & Context** with concrete LLM matching patterns (keywords to search for: numbers, package names, first-person verbs)
+- Added **Criterion 2: Go-Specific Reasoning** with causal connector words LLM should match ("because," "so that," "required," trade-off language)
+- Added **Criterion 3: Problem-Solution Pairing** with indicator words for each component (problem: "challenge," "issue," "difficult"; solution: "so we," "we implemented"; outcome: "reduced," "improved")
+- Expanded calibration quotes to include **fairness variants** (different scales, different approaches, same score) so LLM learns that score is NOT correlated with project size
+- Added **Pattern Matching Priority Order** so LLM knows the sequence to check criteria
+- Added **Ambiguity Resolution** rules with explicit examples (e.g., "lightweight threads" = goroutines, custom error handling = standard error wrapping)
+
+**Impact**: LLM can now match transcript phrases to scoring criteria mechanically. Calibration quotes show that different answer types get same score, teaching LLM to be fair.
+
+---
+
+### 4. **Maintaining Strengths**
+
+**Preserved**:
+- Question structure (3 questions covering project, concepts, operations) - scored 88-95
+- Depth-and-layering guidance (natural follow-ups without scripted follow-ups) - scored 88
+- Coverage map and learning goals - scored 95
+- MVEC concept - scored 93
+- Red/green flag alignment - scored 92
+
+**Enhanced but not changed**:
+- Red flags and green flags remain, now backed by more objective criteria
+- Scoring scale (1-5) remains, now with clearer decision logic
+- Question requirements remain, now with fairness guardrails
+
+---
+
+### 5. **Co-Evolution: Questions ↔ Rubric Alignment**
+
+**Added to Question Prompt**:
+- Fairness guardrails section (new)
+- Fairness notes within each question (new)
+
+**Added to Rubric Prompt**:
+- Criterion definitions with LLM pattern matching (new)
+- Decision tree for scoring (new)
+- Fairness override rules (new)
+- Ambiguity resolution (new)
+- Fairness variants in calibration quotes (new)
+
+**Result**: Questions now explicitly encourage fair assessment, and rubric now explicitly enforces fair scoring. They work together to reduce bias.
+
+---
+
+### Why These Mutations
+
+**Rubric Objectivity (82)**: The original rubric was good but still relied on subjective judgment calls. Adding the decision tree and pattern-matching keywords makes it algorithmic enough for LLMs to apply consistently.
+
+**Question Fairness (85)**: The questions were technically sound but implicitly advantaged candidates from large companies or high-scale systems. Fairness guardrails and MVEC clarifications make clear that technical reasoning matters, not context.
+
+**Rubric LLM Compatibility (85)**: The original rubric had good structure but LLMs might struggle matching abstract criteria to messy real-world transcripts. Explicit pattern matching and ambiguity resolution rules make it easier for LLMs to score accurately.
+
+All mutations are surgical—they add new guidance without changing the core question structure or rubric philosophy. The improvements directly address the three weakest areas while preserving the strong scores in coverage, clarity, and alignment.

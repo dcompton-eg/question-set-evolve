@@ -1,0 +1,164 @@
+## Enhanced LLM Scoring Compatibility
+
+### Transcript Matching Patterns by Score Level
+
+Use these concrete, observable patterns to score candidate responses from transcripts:
+
+#### Pattern 1: Specificity Anchors (Foundation for all scores)
+Candidates MUST include at least one of these to score above 1:
+- **Numerical details**: "500 RPS," "100MB," "team of 3," "2TB daily," "6 months," "1K users"
+- **Technology names**: "goroutines," "channels," "mutex," "pprof," "net/http," "SQL," "defer," "context"
+- **Agency verbs**: "I implemented," "I debugged," "I optimized," "I designed," "I discovered," "I profiled"
+
+If transcript contains ONLY generic words ("service," "handled," "worked," "was good"), score cannot exceed 1.
+
+#### Pattern 2: Problem-Solution Indicator Phrases
+Candidates should use language that explicitly pairs a problem with a solution:
+- **Problem indicators**: "challenge," "issue," "problem," "bottleneck," "difficult," "had to solve," "discovered," "noticed"
+- **Solution indicators**: "so we," "we decided to," "we implemented," "we switched to," "we chose," "we fixed"
+- **Outcome indicators**: "reduced," "improved," "fixed," "learned," "resulted in," "showed"
+
+Example transcript signal: "The challenge was [X]. We implemented [Y], which [outcome]."
+- If problem OR solution is missing → score capped at 2
+- If both present but no outcome → score is 3
+- If all three present → continue to higher scoring criteria
+
+#### Pattern 3: Go-Specific Reasoning (Questions 2 & 3)
+Look for causal language explaining WHY a Go feature mattered:
+- **Cause-effect phrases**: "because," "so that," "to avoid," "required," "forced us to," "allowed us to"
+- **Comparative language**: "unlike," "different from," "better than," "worse than," "instead of," "trade-off"
+
+Example: "We used channels because they're safer than shared memory" = has reasoning
+Example: "We used channels" = no reasoning (score capped at 3)
+
+#### Pattern 4: Trade-off/Constraint Discussion (Score 5 indicator)
+Only candidates who discuss constraints or trade-offs should score 5:
+- **Trade-off language**: "we had to balance," "the downside was," "the benefit was," "we chose X over Y because," "constraint," "had to decide"
+- **Tension acknowledgment**: "simpler but," "safer but," "faster but," "risky but," "downside," "upside"
+
+Example: "We chose channels but had to manage goroutine lifecycle carefully" = trade-off thinking
+Example: "We used channels and it was great" = no trade-off awareness (score capped at 4)
+
+---
+
+### Score Anchors with Transcript Examples
+
+#### Question 1 - Score Progression
+
+**Score 1 (Generic, non-specific):**
+- Transcript: "I built a Go backend. It handled requests and was pretty standard."
+- Missing: Any technology names, numerical context, or specific role
+
+**Score 2 (Some detail, but incomplete problem-solution):**
+- Transcript: "I built a REST API in Go. We had some performance issues and optimized it."
+- Has: Technology name ("REST API"), generic problem ("performance")
+- Missing: Specific challenge description, how it was solved, outcome
+
+**Score 3 (Baseline: specificity + problem-solution):**
+- Transcript: "I built a payment service handling about 500 requests per second. The challenge was ensuring idempotency. We used a cache with a TTL to track request IDs, which worked well."
+- Has: Numerical context (500 RPS), specific technology (cache, TTL), problem ("idempotency"), solution ("track request IDs"), outcome ("worked well")
+
+**Score 4 (Exceeds: specificity + problem-solution + one trade-off):**
+- Transcript: "I led a notification service handling 100K events per second. The challenge was backpressure on the channel queue. We had to decide between buffered channels or a separate queue. We chose buffered channels for simplicity, but we had to monitor memory carefully."
+- Has: All of Score 3, PLUS acknowledgment of a trade-off ("simplicity" vs. "memory monitoring")
+
+**Score 5 (Exceptional: full trade-off reasoning):**
+- Transcript: "I built a background job processor doing 5K jobs per second. The hard part was graceful shutdown—how do you stop accepting new work but finish in-flight jobs without hanging? We used context cancellation with a 30-second timeout and WaitGroup coordination. If we got the timing wrong, we'd either lose jobs or the service would hang. We had to balance responsiveness against data loss."
+- Has: All of Score 4, PLUS explicit trade-off discussion ("balance responsiveness against data loss"), constraint acknowledgment ("if we got the timing wrong")
+
+---
+
+#### Question 2 - Score Progression
+
+**Score 1 (Feature named, no reasoning):**
+- Transcript: "Go has goroutines, and we used them."
+- Missing: Why they used them, what problem they solved, how Go differs from other languages
+
+**Score 2 (Feature + vague reasoning):**
+- Transcript: "We used goroutines because they're lightweight. We also handled errors properly."
+- Has: One feature, one vague reason ("lightweight")
+- Missing: Real project context, specific problem solved, comparison to alternatives
+
+**Score 3 (Baseline: feature + real problem + one reason):**
+- Transcript: "We used goroutines to handle concurrent HTTP requests. Without goroutines, we'd have needed thread pools like Java, which use way more memory."
+- Has: Feature (goroutines), real scenario (HTTP requests), explicit reason (memory efficiency), language comparison (Java)
+
+**Score 4 (Exceeds: feature + problem + reason + one trade-off):**
+- Transcript: "We initially used mutexes to protect our cache, but we saw lock contention under load. We switched to a single goroutine with a channel to manage the cache. That eliminated contention, but it added a bit of latency per request since everything had to go through one goroutine."
+- Has: All of Score 3, PLUS trade-off discussion ("eliminated contention" vs. "added latency")
+
+**Score 5 (Exceptional: full trade-off + constraint reasoning):**
+- Transcript: "We wrapped errors with fmt.Errorf using %w so we could use errors.Is() and errors.As(). This let us distinguish between retryable errors like timeouts and permanent failures like permission errors. In our retry logic, we could automatically retry timeouts but fail fast on permission errors. If we'd just used string error messages, we'd have had to parse strings or lose error context, which would've broken our whole error handling strategy."
+- Has: All of Score 4, PLUS explicit trade-off reasoning ("retryable vs. permanent"), constraint discussion ("if we'd just used strings"), outcome impact ("would've broken our strategy")
+
+---
+
+#### Question 3 - Score Progression
+
+**Score 1 (No real problem, or too vague):**
+- Transcript: "We deployed to production and it worked fine."
+- Missing: Any specific operational problem, debugging, or learning
+
+**Score 2 (Problem mentioned, but no solution or debugging):**
+- Transcript: "We had memory issues in production. It was a goroutine thing."
+- Has: Problem area identified
+- Missing: How they discovered it, what they did about it, how they verified the fix
+
+**Score 3 (Baseline: specific problem + how they debugged/resolved it):**
+- Transcript: "We had a memory leak in production. We profiled the service with pprof and found that goroutines weren't being cleaned up. We fixed the lifecycle management, and the memory stopped growing."
+- Has: Specific problem (memory leak), specific tool (pprof), root cause (goroutine cleanup), action taken (fixed lifecycle), outcome (memory stable)
+
+**Score 4 (Exceeds: problem + debugging + outcome + one constraint):**
+- Transcript: "We had latency spikes under peak load. I profiled with pprof and found too much memory allocation in the hot path. We switched to object pooling to reuse allocations. This reduced GC pause time from 50ms to 5ms and improved p99 latency by 60%. The constraint was we had to be careful about pool size—too small and we'd still allocate, too large and we'd waste memory."
+- Has: All of Score 3, PLUS constraint acknowledgment ("pool size trade-off")
+
+**Score 5 (Exceptional: problem + debugging + outcome + full trade-off):**
+- Transcript: "A goroutine leak caused memory to grow unboundedly. We noticed it from monitoring—memory was climbing 100MB per hour. We traced it to goroutines spawned by the HTTP client that weren't being cancelled on request timeout. We fixed it by ensuring all goroutines respected context cancellation. The hard part was understanding that the HTTP client could spawn goroutines we didn't explicitly create, which taught us to be more careful about context propagation. Without that fix, the service would eventually run out of memory and crash."
+- Has: All of Score 4, PLUS learning/insight ("taught us to be more careful"), explicit consequence ("would eventually crash")
+
+---
+
+### Minimum Viable Evidence of Competence - LLM Checklist
+
+**Question 1 MVEC (must have for score 3+):**
+- [ ] Mentions a specific project type or context (REST API, batch job, background processor, etc.)
+- [ ] Identifies a technical challenge or decision (not just "we built it")
+- [ ] Describes how they approached/solved it (not just "we fixed it")
+- [ ] Includes measurable context OR specific technology names
+
+**Question 2 MVEC (must have for score 3+):**
+- [ ] Names a specific Go construct (goroutines, channels, mutex, error wrapping, context, defer, etc.)
+- [ ] References a real project or production scenario (not hypothetical)
+- [ ] Explains one reason it mattered for their problem (has "because," "so that," or similar)
+- [ ] Shows awareness of how Go differs from other languages OR how the feature solved a real problem
+
+**Question 3 MVEC (must have for score 3+):**
+- [ ] Describes a specific operational problem (memory leak, latency spike, panic, race condition, etc.)
+- [ ] Explains how they discovered or debugged it (tool name or method: pprof, logging, race detector, monitoring, etc.)
+- [ ] Indicates resolution or learning (what they did, what they learned, outcome)
+- [ ] Shows cause-effect thinking (problem → investigation → root cause → fix → outcome)
+
+---
+
+### Fairness Guardrails for LLM Scoring
+
+**DO NOT penalize for:**
+- Project scale (1K RPS service = 1M RPS service if technical reasoning is equivalent)
+- Company size or prestige (startup vs. enterprise)
+- Specific tool choices (pprof vs. other profilers, datadog vs. custom monitoring)
+- Industry or domain (fintech vs. social media vs. internal tools)
+- Team structure (solo contributor vs. team lead—evaluate technical depth, not title)
+- Geographic or cultural factors in language use
+
+**DO penalize for:**
+- Inability to explain what they built (generic answers)
+- Lack of specificity (no technology names, no numbers, no real examples)
+- Absent problem-solution pairing (describes features without explaining why they matter)
+- No causal reasoning (names Go features without explaining how they solved a problem)
+- Inability to articulate trade-offs or constraints at score 5 level
+
+**Equivalence Rules:**
+- Goroutines + channels = Mutexes + channels = Custom concurrency approach (all equivalent for scoring)
+- Error wrapping with fmt.Errorf = Custom error types = Sentinel error values (all equivalent)
+- pprof = other CPU profilers = manual benchmarking (all equivalent debugging approaches)
+- Small operational problem debugged well = Large operational problem debugged well (same competence)

@@ -1,0 +1,135 @@
+# Interview Question Set Design Prompt
+
+## Role Being Hired For
+Senior Go (Golang) Backend Engineer
+
+## Interview Context
+**This is a recruiter phone screen.**
+- Questions will be asked by a non-technical recruiter reading from a script
+- Questions must be simple to read aloud and understand
+- 10-minute phone screen
+- Scoring will be done by LLM-as-judge from the transcript
+
+## Candidate Level
+Senior (5+ years Go experience, 7+ years total engineering experience)
+
+## What We Want to Learn
+- Whether the candidate has genuine hands-on Go experience
+- Basic understanding of Go's key concepts (concurrency, error handling)
+- Production experience with Go services
+- Ability to explain technical concepts clearly
+
+## Question Requirements
+- Exactly 3 scripted questions
+- No follow-up questions (recruiter reads questions as-is)
+- Questions must be easy for a non-technical person to read aloud
+- Questions should allow candidates to demonstrate real experience
+- Avoid jargon-heavy questions that are hard to pronounce or understand
+- Questions should fit within ~10 minutes total (about 3 minutes per question)
+- Question should require an appropriate level of technical detail for the time limit
+- **Questions must collectively cover: (1) hands-on Go project experience, (2) Go-specific concepts (concurrency OR error handling), (3) production deployment/operational considerations**
+
+## Fairness Guardrails
+To ensure equitable assessment across diverse backgrounds and career paths:
+- **Avoid seniority-gating language** that privileges certain company sizes or roles. Use "service" instead of "microservice," "task" instead of "distributed system"
+- **Avoid region/industry assumptions**. Don't assume candidates worked at specific companies or with specific frameworks (e.g., Kubernetes, Datadog). Use neutral language like "monitoring tool" or "deployment system"
+- **Avoid implicit credential requirements**. Don't require candidates to have worked at FAANG companies or on "high scale" systems. A 1K RPS service demonstrates the same technical capability as a 1M RPS service
+- **Ask for "an example you remember"** rather than "your most impressive project" to reduce anxiety and cultural bias
+- **Accept equivalent technologies**. A candidate who handled errors with a custom wrapper is as competent as one using standard error wrapping packages
+- **Recognize diverse solution paths**. A candidate who used mutexes + channels is demonstrating the same concurrency understanding as one who used channels alone
+
+## Red Flags (for LLM scoring rubric)
+- Cannot explain what they've built with Go
+- Vague or generic answers that could apply to any language
+- No mention of real projects or production experience
+- Cannot articulate basic Go concepts in simple terms
+- Answers that describe Go features without explaining why they matter
+- No discussion of trade-offs or constraints
+
+## Green Flags (for LLM scoring rubric)
+- Specific examples from real projects with measurable context (team size, scale, timeline)
+- Clear explanation of Go-specific features and why they matter
+- Demonstrates understanding of Go's strengths and trade-offs
+- Can explain technical concepts in accessible language
+- Mentions concrete challenges encountered and how they were solved
+- Discusses operational aspects (monitoring, debugging, deployment)
+
+## Output Format
+Provide a question set with:
+- Exactly 3 clear, scripted questions
+- Questions phrased for a non-technical recruiter to read aloud
+- Time allocation (should sum to ~10 minutes)
+- Explicit coverage map showing which question addresses which learning goal
+- What to look for in answers (for LLM scoring)
+
+The LLM scoring rubric should include:
+- What a strong answer looks like
+- What a weak answer looks like
+- Specific signals to listen for
+- **Transcript-matchable indicators** (concrete phrases, patterns, or details that signal competence level)
+- **For each question: minimum viable evidence of competence** (what must be present for a passing score)
+
+## Question Design Guidance for Depth and Layering
+
+To ensure questions elicit substantive responses within the 3-minute window:
+- **Question 1 (Project Experience)**: Ask for a specific project, then ask them to describe ONE key technical decision or challenge they faced. This creates natural depth without requiring follow-ups.
+  - Example structure: "Tell me about a Go backend project you built or maintained. What was the biggest technical challenge you had to solve, and how did you approach it?"
+  - Fairness note: Accept any project type (REST API, worker, batch job, microservice, etc.) and any scale (small internal tool to large-scale system). The technical challenge is what matters, not the size.
+  
+- **Question 2 (Go Concepts)**: Ask them to explain a Go-specific feature in context of a real problem they solved, not in abstract.
+  - Example structure: "Go has some unique features for handling [concurrency/errors]. Tell me about a time when you used [goroutines/channels/error handling pattern] to solve a problem in production. What would have been harder or different if you were using a different language?"
+  - Fairness note: Accept any valid Go concurrency or error handling approach (goroutines, channels, mutexes, context cancellation, error wrapping, custom error types, etc.). All demonstrate competence.
+  
+- **Question 3 (Production/Operations)**: Ask about a specific operational challenge (not just deployment), forcing them to discuss constraints and trade-offs.
+  - Example structure: "Tell me about a time when a Go service you built caused an operational problem in production—maybe a performance issue, memory leak, or unexpected behavior. How did you debug it and what did you learn?"
+  - Fairness note: Accept any operational problem (small or large). A candidate who debugged a single-threaded memory issue demonstrates the same debugging competence as one who debugged a distributed system race condition.
+
+These structures naturally prompt candidates to provide specificity, context, and depth without requiring follow-up questions.
+
+## Calibration: Example Candidate Responses by Score
+
+### Question 1: Project Experience
+
+**Score 1 (Weak - Generic, no specificity):**
+- "I've built several Go backends over the years. They were pretty standard."
+- "We built a service in Go. It was a typical application that handled requests."
+
+**Score 3 (Meets expectations - Specific challenge + context):**
+- "I built a payment processing service that handled about 500 requests per second. The main challenge was ensuring idempotency without hitting the database too hard. We used a cache layer with a TTL to track request IDs."
+- "I built a small internal tool in Go that processes CSV files. The tricky part was managing memory when files were larger than RAM, so I implemented streaming processing where I'd read and write in chunks."
+- "We rewrote our data pipeline in Go. The service processes about 2TB of logs daily. The challenge was managing goroutines efficiently without memory leaks—we had to be careful about goroutine lifecycle and cleanup."
+
+**Score 5 (Exceptional - Challenge + context + trade-off insight):**
+- "I led a notification service in Go that served millions of users. We handled 100K events per second. The architectural challenge was implementing a pub-sub system using channels that could handle backpressure without dropping messages. We had to decide between buffered channels (simple, but memory risk) vs. a queue + worker pool (safer, but more complex). We went with buffered channels but implemented careful monitoring."
+- "I built a background job processor in Go. It handled 5K jobs per second with retries. The challenge was designing a graceful shutdown that wouldn't lose in-flight work. We used context cancellation and WaitGroup coordination—if we didn't get the context timing right, we'd either lose jobs or hang on shutdown."
+
+### Question 2: Go-Specific Concepts
+
+**Score 1 (Weak - Names feature with no explanation):**
+- "Go has goroutines, and we used them in our system."
+- "We handled errors in our Go service. It's important to handle errors properly."
+
+**Score 3 (Meets expectations - Feature + one reason it mattered):**
+- "We used goroutines to handle concurrent HTTP requests. Without goroutines, we'd have needed thread pools like in Java, and we'd use way more memory."
+- "We implemented custom error types that wrapped the underlying error so we could distinguish between network timeouts and database errors in our monitoring."
+- "We used context cancellation to handle request timeouts gracefully. If a client disconnected, we'd stop processing and free up resources immediately."
+
+**Score 5 (Exceptional - Feature + trade-off or constraint reasoning):**
+- "We initially used mutexes to protect our in-memory cache, but under load we saw lock contention slowing everything down. We switched to channels with a dedicated goroutine, which eliminated the contention. The trade-off was slightly higher latency per individual request, but much more predictable p99 latency overall, which mattered more for our SLA."
+- "We wrapped errors at every layer using fmt.Errorf with %w so we could use errors.Is() and errors.As() for type-based error handling. This let us distinguish between retryable errors and permanent failures, which was critical for our retry logic—we could automatically retry timeouts but fail fast on permission errors."
+
+### Question 3: Production/Operational Problem
+
+**Score 1 (Weak - Generic or no real problem):**
+- "We deployed our Go service to production and it worked fine."
+- "We had some operational issues, but I don't remember the details."
+
+**Score 3 (Meets expectations - Specific problem + how it was resolved):**
+- "We had a memory leak in production. We profiled the service with pprof and found that goroutines weren't being cleaned up properly. We fixed the goroutine lifecycle management and the memory stopped growing."
+- "Our service was slow sometimes. We added logging and realized we were making too many database queries. We implemented caching, which reduced latency significantly."
+- "We had an unexpected panic in production. We added better error handling and logging to understand where it came from. We discovered it was a nil pointer dereference in error handling code."
+
+**Score 5 (Exceptional - Problem + diagnosis + outcome with reasoning):**
+- "We had a latency spike under peak load. I used pprof to profile CPU and found we were allocating too much memory in the hot path. We switched to object pooling and reduced GC pause time from 50ms to 5ms, which improved p99 latency by 60%."
+- "A goroutine leak in production caused memory to grow unboundedly—we noticed it because monitoring showed memory climbing 100MB/hour. We traced it to goroutines spawned by the HTTP client that weren't being cancelled on request timeout. We fixed it by ensuring all goroutines respected context cancellation."
+- "We discovered a race condition in production where concurrent updates to a map caused panics. We debugged it with the race detector and realized we needed synchronization. We chose RWMutex over channels because our access pattern was read-heavy, and this reduced lock contention by 80%."

@@ -1,0 +1,186 @@
+{
+  "title": "Senior Go Backend Engineer - Recruiter Phone Screen Scoring Rubric",
+  "overall_scoring_guidance": "This rubric is designed for LLM-as-judge evaluation of a 10-minute recruiter phone screen. Score each question independently using the provided criteria. A passing candidate should demonstrate genuine hands-on Go experience with specific project examples, understanding of Go-specific concepts (concurrency/error handling), and production engineering maturity. Look for concrete details (team size, scale metrics, timeline) rather than generic language. Red flags include vague answers, inability to explain specific projects, or generic responses that could apply to any language. Bonus indicators include measurable scale context, discussion of trade-offs, and concrete failure/solution narratives.",
+  "question_rubrics": [
+    {
+      "question_id": "Q1_HANDS_ON_EXPERIENCE",
+      "criteria": [
+        {
+          "criterion_id": "Q1_C1_PROJECT_SPECIFICITY",
+          "name": "Project Specificity & Clarity",
+          "description": "Candidate provides concrete details about a real Go project including: what the project was, what it did, and the candidate's specific role. Answers should be grounded in actual work, not hypothetical or tutorial examples.",
+          "weight": 1.2,
+          "score_1_description": "Cannot name a specific project, describes only tutorial/learning examples, or gives extremely vague description (e.g., 'I built a backend service' with no context). No clear indication of what the project actually did.",
+          "score_3_description": "Names a specific project and explains what it did in basic terms. States a role (e.g., 'I was the lead developer' or 'I worked on the API layer'). May lack some detail but core project is identifiable and real.",
+          "score_5_description": "Clearly describes a specific, substantial project with concrete purpose (e.g., 'built a real-time notification service for an e-commerce platform' or 'developed a data pipeline for ML training'). Role is clearly defined with specific responsibilities (e.g., 'I owned the API design and led a team of 3 engineers'). Project context is vivid and memorable."
+        },
+        {
+          "criterion_id": "Q1_C2_SCALE_CONTEXT",
+          "name": "Scale & Measurable Context",
+          "description": "Candidate provides quantifiable context about project scale: team size, user/request volume, data scale, or timeline. These metrics demonstrate the project was substantial enough to require serious engineering.",
+          "weight": 1.3,
+          "score_1_description": "No scale metrics provided. Answers like 'I built it' or 'small team' without numbers. No indication of whether this was a hobby project or production service.",
+          "score_3_description": "Provides at least one scale metric: team size (e.g., '3 engineers'), user count (e.g., '10,000 users'), request volume (e.g., 'handled thousands of requests'), or timeline (e.g., 'worked on it for 2 years'). Metrics may be approximate but give real sense of scope.",
+          "score_5_description": "Provides multiple concrete scale metrics with specificity. Examples: 'team of 5, served 2 million users, handled 50,000 QPS, built over 18 months' or 'I was one of two engineers, but we processed 500GB of data daily for 3 years.' Metrics demonstrate this was a serious, production-grade project."
+        },
+        {
+          "criterion_id": "Q1_C3_TECHNICAL_DEPTH",
+          "name": "Technical Depth & Architecture Awareness",
+          "description": "Candidate demonstrates understanding of the technical architecture and key decisions. Shows awareness of why certain technologies or patterns were chosen, not just what was built.",
+          "weight": 1.1,
+          "score_1_description": "Describes only surface-level features ('we had a database and an API'). No mention of architectural choices, trade-offs, or technical challenges. Sounds like following a tutorial rather than making engineering decisions.",
+          "score_3_description": "Mentions some technical components (e.g., 'used PostgreSQL for storage, Redis for caching, deployed on Kubernetes'). May mention one architectural decision or constraint (e.g., 'chose Go for performance' or 'had to handle high concurrency'). Shows basic technical awareness.",
+          "score_5_description": "Discusses architecture with clear reasoning: 'chose Go for low memory footprint and concurrency, used gRPC for inter-service communication, deployed with Kubernetes for scaling.' Mentions specific technical challenges and how they were addressed (e.g., 'had to optimize for latency, so we implemented caching at multiple layers'). Shows deliberate engineering decisions."
+        }
+      ],
+      "example_excellent_answer": "I spent the last three years as the lead backend engineer on our real-time bidding platform at [Company]. We built a Go service that processes ad auction requests - we were handling about 100,000 requests per second at peak, with a team of four engineers. My specific role was designing the core auction logic and leading the infrastructure work. We chose Go specifically because we needed low latency and efficient concurrency handling. The service had to make decisions in under 10 milliseconds, so we used goroutines extensively to handle thousands of concurrent bidding requests. We also integrated with multiple external services, so we had to be careful about timeout handling and circuit breakers. The whole thing was deployed on Kubernetes and we spent a lot of time on observability - we had detailed metrics and tracing to understand what was happening in production.",
+      "example_poor_answer": "Yeah, I've built some Go stuff. I made a backend service once. It was pretty straightforward - just had a database and an API. I worked on it with a few other people. It was fine.",
+      "red_flags": [
+        "Cannot name a specific project or company context",
+        "Describes only learning/tutorial projects or toy examples",
+        "Uses generic language that could apply to any language ('built a backend', 'made an API')",
+        "No scale metrics or indication of project size/scope",
+        "Cannot articulate their specific role or contributions",
+        "Describes project as 'simple' or 'straightforward' with no technical depth",
+        "Mentions only one or two basic technologies with no architectural reasoning",
+        "Answer sounds rehearsed or generic rather than from lived experience"
+      ],
+      "bonus_indicators": [
+        "Mentions specific Go libraries or patterns (gRPC, channels, goroutines) in context of the project",
+        "Provides multiple scale metrics (team size AND user count AND request volume)",
+        "Discusses specific technical challenges and how they were solved",
+        "Mentions performance optimization or scaling work",
+        "References specific monitoring, logging, or observability tools",
+        "Discusses trade-offs made during design (e.g., 'we chose X over Y because...')",
+        "Mentions team leadership or mentoring responsibilities",
+        "Project is recent (last 2-3 years) and still in production"
+      ]
+    },
+    {
+      "question_id": "Q2_GO_CONCEPTS",
+      "criteria": [
+        {
+          "criterion_id": "Q2_C1_CONCEPT_UNDERSTANDING",
+          "name": "Go Concurrency Concept Understanding",
+          "description": "Candidate demonstrates understanding of goroutines and/or channels as Go-specific concurrency primitives. Must explain what these are and why they're different from other approaches (threads, callbacks, etc.).",
+          "weight": 1.3,
+          "score_1_description": "Cannot explain goroutines or channels, or describes them in generic terms that apply to any language ('it's like threading' or 'it's for running things in parallel'). No distinction between Go's approach and other languages. May confuse concepts or provide incorrect information.",
+          "score_3_description": "Correctly explains that goroutines are lightweight compared to OS threads, or that channels are a way to communicate between goroutines. May say something like 'goroutines are cheaper than threads' or 'channels let you pass data between concurrent tasks.' Basic understanding is present but explanation lacks depth.",
+          "score_5_description": "Clearly articulates Go's concurrency model: 'goroutines are user-space threads managed by the Go runtime, so you can have thousands of them cheaply' AND/OR 'channels are the Go way to communicate between goroutines safely, avoiding shared memory issues.' Contrasts with other approaches: 'unlike Java threads which are expensive, or callback-based approaches which get messy, Go's model is elegant.' Shows understanding of WHY Go designed it this way."
+        },
+        {
+          "criterion_id": "Q2_C2_REAL_PROJECT_APPLICATION",
+          "name": "Real Project Application & Problem Context",
+          "description": "Candidate describes a concrete, real problem they solved using goroutines/channels in production code. Must explain what problem needed solving and why goroutines/channels were the right choice.",
+          "weight": 1.3,
+          "score_1_description": "Cannot describe a real use case, or describes a trivial/toy example. Answers like 'I used goroutines to make things faster' or 'I learned about channels in a tutorial.' No connection to actual production problem.",
+          "score_3_description": "Describes a real project scenario where goroutines/channels were used. Example: 'We used goroutines to handle multiple concurrent requests' or 'We used channels to coordinate between workers.' Problem is identifiable but explanation of why this approach was chosen is minimal.",
+          "score_5_description": "Describes a specific, non-trivial production problem and explains why goroutines/channels were the right solution. Example: 'We had to process 10,000 incoming messages per second from Kafka. We used goroutines to spawn a worker per message, and channels to coordinate with a results aggregator, because we needed to handle them concurrently without blocking. We could have used a thread pool, but goroutines are cheaper and Go's scheduler handles them better.' Shows clear reasoning about the choice."
+        },
+        {
+          "criterion_id": "Q2_C3_TRADEOFF_AWARENESS",
+          "name": "Trade-off & Constraint Awareness",
+          "description": "Candidate demonstrates understanding of trade-offs, constraints, or gotchas with their concurrency approach. Shows mature engineering thinking about complexity, debugging, or resource trade-offs.",
+          "weight": 1.2,
+          "score_1_description": "No mention of any trade-offs, constraints, or challenges. Answer is purely positive about the approach with no nuance. No awareness of potential issues (race conditions, deadlocks, resource limits, debugging difficulty).",
+          "score_3_description": "Mentions one constraint or trade-off, though may not articulate it clearly. Examples: 'goroutines can be tricky to debug' or 'channels add some complexity' or 'we had to be careful about goroutine leaks.' Shows some awareness that concurrency isn't free.",
+          "score_5_description": "Articulates specific, concrete trade-offs or lessons learned. Examples: 'We had to use sync.WaitGroup to coordinate shutdown, otherwise goroutines would leak' or 'Channels added complexity - we had to be careful about deadlocks, so we used buffered channels and timeouts' or 'We initially spawned a goroutine per request, but that exhausted memory at scale, so we switched to a worker pool pattern.' Shows hard-won experience."
+        }
+      ],
+      "example_excellent_answer": "We had a service that needed to process webhook events from multiple external APIs - we were getting thousands of events per second. Initially we were processing them sequentially, which created a huge backlog. I redesigned it to spawn a goroutine for each incoming event. The key insight was that goroutines are really cheap in Go - we could safely spawn thousands of them without the overhead you'd have with OS threads in Java or C++. We used channels to coordinate with a results aggregator that batched writes to the database. The tricky part was handling graceful shutdown - we had to use sync.WaitGroup to make sure all in-flight events were processed before we shut down the service. We also had to put a limit on the number of concurrent goroutines to avoid memory issues, so we ended up using a semaphore pattern with a buffered channel. It worked great - reduced our event processing latency from minutes to milliseconds.",
+      "example_poor_answer": "I've used goroutines. They're good for concurrency. I used them in a project to make things run faster. Channels are also something I've used - they're for communication between goroutines I think. Yeah, goroutines are pretty useful.",
+      "red_flags": [
+        "Cannot explain what goroutines or channels are",
+        "Confuses goroutines with OS threads or describes them generically",
+        "Cannot name a real project where they used goroutines/channels",
+        "Describes only tutorial or learning examples",
+        "Answers are vague ('used them to speed things up') with no concrete problem",
+        "No mention of why goroutines/channels were chosen over alternatives",
+        "Describes concurrency as simple/easy with no awareness of complexity",
+        "Cannot articulate any trade-offs, constraints, or lessons learned",
+        "Describes features without explaining why they matter"
+      ],
+      "bonus_indicators": [
+        "Mentions specific patterns: worker pool, fan-out/fan-in, pipeline",
+        "Discusses resource constraints and how they were managed (goroutine limits, memory)",
+        "Mentions specific Go constructs: sync.WaitGroup, sync.Mutex, buffered channels, select statement",
+        "Describes a failure or mistake and how it was fixed",
+        "Contrasts Go's approach with other languages (Java threads, async/await, etc.)",
+        "Mentions production scale (thousands of QPS, millions of events, etc.)",
+        "Discusses debugging or observability challenges with concurrency",
+        "Mentions graceful shutdown or signal handling"
+      ]
+    },
+    {
+      "question_id": "Q3_PRODUCTION_OPS",
+      "criteria": [
+        {
+          "criterion_id": "Q3_C1_RELIABILITY_APPROACH",
+          "name": "Reliability & Operational Resilience",
+          "description": "Candidate describes concrete approaches to keeping a production Go service running reliably. Must address at least one of: error handling, recovery, health checks, restarts, or graceful degradation.",
+          "weight": 1.3,
+          "score_1_description": "No mention of reliability measures. Answers like 'we just deployed it' or 'it worked fine' with no discussion of how failures are handled. No awareness of production concerns like crashes, restarts, or error recovery.",
+          "score_3_description": "Mentions basic reliability practices: 'we had error handling' or 'we restarted the service if it crashed' or 'we had health checks.' May mention one specific approach (e.g., 'we used defer to ensure cleanup' or 'we had retry logic'). Shows basic operational awareness.",
+          "score_5_description": "Describes multiple reliability approaches with specificity. Examples: 'We used structured error handling with custom error types, implemented circuit breakers for external calls, had health check endpoints that the orchestrator monitored, and used graceful shutdown to drain in-flight requests before stopping.' Shows comprehensive thinking about resilience."
+        },
+        {
+          "criterion_id": "Q3_C2_MONITORING_OBSERVABILITY",
+          "name": "Monitoring, Observability & Debugging",
+          "description": "Candidate describes how they monitored and observed the service in production. Must mention specific metrics, logs, traces, or tools used to understand service behavior.",
+          "weight": 1.3,
+          "score_1_description": "No mention of monitoring, logging, or observability. No indication of how they knew if the service was working or how they'd debug issues. Answers suggest flying blind in production.",
+          "score_3_description": "Mentions basic observability: 'we had logs' or 'we monitored CPU and memory' or 'we used Prometheus for metrics.' May name one tool or metric type. Shows awareness that you need to observe production systems.",
+          "score_5_description": "Describes layered observability approach: 'We had structured JSON logging with request IDs for tracing, Prometheus metrics for latency and error rates, distributed tracing with Jaeger to understand slow requests, and Grafana dashboards for real-time visibility. We set up alerts for error rates and latency SLOs.' Shows mature observability thinking with specific tools."
+        },
+        {
+          "criterion_id": "Q3_C3_OPERATIONAL_CHALLENGES",
+          "name": "Concrete Challenges & Solutions",
+          "description": "Candidate describes specific operational problems they encountered and how they solved them. Shows learning from real production experience, not just theoretical knowledge.",
+          "weight": 1.2,
+          "score_1_description": "No mention of any challenges or problems. Answers suggest the service just worked with no issues. No evidence of real production experience or problem-solving.",
+          "score_3_description": "Mentions one challenge and a solution, though may lack detail. Examples: 'We had memory leaks that we fixed' or 'We had timeout issues that we resolved with better configuration.' Shows some problem-solving but lacks depth.",
+          "score_5_description": "Describes specific, non-trivial challenges with concrete solutions and lessons learned. Examples: 'We had goroutine leaks from unclosed channels that were slowly exhausting memory - took us weeks to find with pprof. We fixed it by being more careful about channel lifecycle.' Or: 'We had cascading failures when a downstream service went down - requests would pile up and exhaust our connection pool. We implemented circuit breakers and timeouts to fail fast.' Shows hard-won operational maturity."
+        },
+        {
+          "criterion_id": "Q3_C4_ERROR_HANDLING_STRATEGY",
+          "name": "Error Handling Strategy & Approach",
+          "description": "Candidate describes how they handled errors in their production Go service. Must show understanding of Go's error handling approach and how they applied it in practice.",
+          "weight": 1.2,
+          "score_1_description": "No mention of error handling strategy. Vague answers like 'we handled errors' with no explanation. No awareness of Go's error handling model (explicit error returns, error types, etc.).",
+          "score_3_description": "Mentions basic error handling: 'we checked for errors' or 'we logged errors' or 'we returned errors up the stack.' May mention one specific pattern (e.g., 'we used custom error types' or 'we wrapped errors with context'). Shows basic understanding of Go's approach.",
+          "score_5_description": "Describes thoughtful error handling strategy: 'We used custom error types to distinguish between retryable and non-retryable errors, wrapped errors with context using pkg/errors to preserve stack traces, had different handling for different error types (timeouts vs. not found vs. internal errors), and logged errors with enough context to debug.' Shows mature error handling thinking."
+        }
+      ],
+      "example_excellent_answer": "I deployed a critical payment processing service that had to be extremely reliable. We used multiple strategies. First, error handling - we defined custom error types to distinguish between retryable errors like timeouts and non-retryable errors like invalid input. We wrapped errors with context to preserve stack traces for debugging. Second, reliability - we implemented circuit breakers for calls to the payment gateway, had retry logic with exponential backoff, and used graceful shutdown to drain in-flight requests. Third, observability - we had structured JSON logging with request IDs for tracing, Prometheus metrics for transaction latency and error rates, and Datadog APM for distributed tracing. We set up alerts for error rate spikes. The biggest challenge we faced was goroutine leaks - we had a bug where channels weren't being closed properly, and over time the service would exhaust memory. We debugged it with pprof and fixed it by being more disciplined about channel lifecycle. We also had an incident where a downstream service went down, and our service started accumulating requests because we weren't timing out properly. We fixed that by implementing circuit breakers and aggressive timeouts. Those lessons shaped how we built the next service.",
+      "example_poor_answer": "We deployed it to production and it ran fine. We had some monitoring, I think. We used logs to see what was happening. If something broke, we'd restart it. We had error handling, but I don't remember the details. It was pretty stable.",
+      "red_flags": [
+        "No mention of any monitoring, logging, or observability",
+        "Cannot describe how they knew if the service was working",
+        "No discussion of error handling or failure scenarios",
+        "Suggests service was deployed and just worked with no operational thought",
+        "Cannot name any specific tools, metrics, or monitoring approaches",
+        "No mention of any production problems or how they were solved",
+        "Vague answers about 'handling errors' or 'monitoring' with no specifics",
+        "No awareness of Go-specific operational concerns (goroutine leaks, memory management, etc.)"
+      ],
+      "bonus_indicators": [
+        "Mentions specific monitoring tools: Prometheus, Grafana, Datadog, New Relic, etc.",
+        "Discusses structured logging and request tracing",
+        "Mentions distributed tracing (Jaeger, Zipkin, etc.)",
+        "Describes SLOs, error budgets, or alerting strategy",
+        "Mentions specific Go debugging tools: pprof, delve, race detector",
+        "Discusses graceful shutdown and signal handling",
+        "Describes circuit breakers, retries, or timeout strategies",
+        "Mentions specific production incidents and post-mortems",
+        "Discusses capacity planning or scaling decisions",
+        "Mentions custom error types or error wrapping libraries"
+      ]
+    }
+  ],
+  "hiring_recommendation_thresholds": {
+    "strong_hire": 4.0,
+    "hire": 3.5,
+    "maybe": 3.0,
+    "no_hire": 2.5
+  }
+}

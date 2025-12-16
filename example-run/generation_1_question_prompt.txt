@@ -1,0 +1,61 @@
+# Interview Question Set Design Prompt
+
+## Role Being Hired For
+Senior Go (Golang) Backend Engineer
+
+## Interview Context
+**This is a recruiter phone screen.**
+- Questions will be asked by a non-technical recruiter reading from a script
+- Questions must be simple to read aloud and understand
+- 10-minute phone screen
+- Scoring will be done by LLM-as-judge from the transcript
+
+## Candidate Level
+Senior (5+ years Go experience, 7+ years total engineering experience)
+
+## What We Want to Learn
+- Whether the candidate has genuine hands-on Go experience
+- Basic understanding of Go's key concepts (concurrency, error handling)
+- Production experience with Go services
+- Ability to explain technical concepts clearly
+
+## Question Requirements
+- Exactly 3 scripted questions
+- No follow-up questions (recruiter reads questions as-is)
+- Questions must be easy for a non-technical person to read aloud
+- Questions should allow candidates to demonstrate real experience
+- Avoid jargon-heavy questions that are hard to pronounce or understand
+- Questions should fit within ~10 minutes total (about 3 minutes per question)
+- Question should require an appropriate level of technical detail for the time limit.
+- **Questions must collectively cover: (1) hands-on Go project experience, (2) Go-specific concepts (concurrency OR error handling), (3) production deployment/operational considerations**
+
+## Red Flags (for LLM scoring rubric)
+- Cannot explain what they've built with Go
+- Vague or generic answers that could apply to any language
+- No mention of real projects or production experience
+- Cannot articulate basic Go concepts in simple terms
+- Answers that describe Go features without explaining why they matter
+- No discussion of trade-offs or constraints
+
+## Green Flags (for LLM scoring rubric)
+- Specific examples from real projects with measurable context (team size, scale, timeline)
+- Clear explanation of Go-specific features and why they matter
+- Demonstrates understanding of Go's strengths and trade-offs
+- Can explain technical concepts in accessible language
+- Mentions concrete challenges encountered and how they were solved
+- Discusses operational aspects (monitoring, debugging, deployment)
+
+## Output Format
+Provide a question set with:
+- Exactly 3 clear, scripted questions
+- Questions phrased for a non-technical recruiter to read aloud
+- Time allocation (should sum to ~10 minutes)
+- Explicit coverage map showing which question addresses which learning goal
+- What to look for in answers (for LLM scoring)
+
+The LLM scoring rubric should include:
+- What a strong answer looks like
+- What a weak answer looks like
+- Specific signals to listen for
+- **Transcript-matchable indicators** (concrete phrases, patterns, or details that signal competence level)
+- **For each question: minimum viable evidence of competence** (what must be present for a passing score)

@@ -1,0 +1,35 @@
+{
+  "title": "Senior Go Backend Engineer - Recruiter Phone Screen",
+  "description": "10-minute phone screen designed for non-technical recruiter delivery. Assesses hands-on Go experience, Go-specific technical concepts, and production operational understanding.",
+  "target_role": "Senior Go (Golang) Backend Engineer",
+  "total_time_minutes": 10,
+  "questions": [
+    {
+      "question_id": "Q1_PROJECT_EXPERIENCE",
+      "question_text": "Tell me about a Go backend project you built or maintained that you're proud of. What was the biggest technical challenge you had to solve in that project, and how did you approach it?",
+      "category": "hands-on experience",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "STRONG ANSWER: Candidate describes a specific, real project with concrete context (what it did, team size, timeline). Identifies a genuine technical challenge (not trivial) and explains their approach with specific technical details. Examples: handling concurrent requests, optimizing database queries, managing state, structuring packages, dealing with API integration complexity. Shows they can connect business needs to technical solutions. WEAK ANSWER: Vague descriptions like 'built a REST API' without specifics. Cannot explain what made the challenge difficult. Generic solutions that apply to any language. No mention of real constraints or trade-offs. MINIMUM VIABLE EVIDENCE: Candidate names a real project, describes what it did, identifies a specific technical problem they faced, and explains at least one concrete step they took to solve it."
+    },
+    {
+      "question_id": "Q2_GO_CONCEPTS",
+      "question_text": "Go has unique features for handling concurrency and errors. Tell me about a time when you used goroutines, channels, error handling, or context cancellation to solve a real problem in production. What would have been harder or different if you were using a different programming language?",
+      "category": "Go-specific technical concepts",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "STRONG ANSWER: Candidate describes a specific production scenario where they used a Go concurrency or error handling feature. Explains why that feature was the right choice for that problem (not just that they used it). Makes a meaningful comparison to another language, showing understanding of Go's trade-offs. Examples: 'Used goroutines to handle multiple database connections simultaneously because spawning them is cheap, unlike threads in Java'; 'Used channels to coordinate worker tasks and prevent race conditions'; 'Used error wrapping to preserve stack context for debugging in production'; 'Used context.Context to handle request cancellation and timeouts'. WEAK ANSWER: Describes Go features in abstract terms without connecting to a real problem. Cannot explain why the feature mattered for their use case. Vague comparisons to other languages. Mentions a feature but not how it solved their specific problem. MINIMUM VIABLE EVIDENCE: Candidate names a specific Go concurrency or error handling feature, describes a real production scenario where they used it, and explains why it was beneficial for that scenario (not just that it worked)."
+    },
+    {
+      "question_id": "Q3_PRODUCTION_OPERATIONS",
+      "question_text": "Tell me about a time when a Go service you built or worked on caused an operational problem in production—maybe a performance issue, memory leak, unexpected behavior, or something similar. How did you debug it, and what did you learn?",
+      "category": "production deployment and operational considerations",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "STRONG ANSWER: Candidate describes a real production incident with specific symptoms (what they observed, how they detected it). Walks through their debugging approach step-by-step (what tools they used, what they checked, how they narrowed down the cause). Explains the root cause and what they changed to fix it. Reflects on what they learned and how it changed their approach going forward. Examples: 'Service was using too much memory because we weren't closing HTTP response bodies'; 'Goroutine leak because we weren't canceling context in certain error paths'; 'Database connections were timing out because we didn't set proper timeouts'; 'CPU spiked because we were doing synchronous work in a handler'. WEAK ANSWER: Cannot describe a real incident. Vague symptoms or unclear how the problem was detected. No explanation of debugging process. Cannot articulate the root cause. No reflection on what was learned. MINIMUM VIABLE EVIDENCE: Candidate describes a real production problem they encountered, explains how they detected or diagnosed it, identifies the root cause, and describes what they changed to fix it."
+    }
+  ]
+}
