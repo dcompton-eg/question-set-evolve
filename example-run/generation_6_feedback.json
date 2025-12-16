@@ -1,0 +1,17 @@
+{
+  "scores": {
+    "question_clarity": 92,
+    "question_relevance": 90,
+    "question_depth": 88,
+    "question_coverage": 95,
+    "question_fairness": 85,
+    "rubric_objectivity": 82,
+    "rubric_discrimination": 88,
+    "rubric_calibration": 90,
+    "rubric_llm_compatibility": 85,
+    "alignment": 92,
+    "completeness": 93
+  },
+  "strengths": "",
+  "improvements": ""
+}

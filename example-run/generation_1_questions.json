@@ -1,0 +1,35 @@
+{
+  "title": "Senior Go Backend Engineer - Recruiter Phone Screen",
+  "description": "A 10-minute phone screen designed for non-technical recruiters to assess genuine hands-on Go experience, Go-specific technical knowledge, and production engineering maturity. Questions are scripted for easy reading aloud and focus on real project experience rather than trivia.",
+  "target_role": "Senior Go (Golang) Backend Engineer",
+  "total_time_minutes": 10,
+  "questions": [
+    {
+      "question_id": "Q1_HANDS_ON_EXPERIENCE",
+      "question_text": "Tell me about a significant Go project you've built or worked on. What was the project for, and what was your specific role in building it? I'd like to hear about the scale - like how many people worked on it, how many users or requests it handled, and roughly how long you worked on it.",
+      "category": "hands-on experience",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "Candidate should describe a specific, real project with concrete details. Look for: clear description of what the project did, their specific contributions (not just 'I was on the team'), and quantifiable context (team size, scale, timeline). They should be able to discuss the project naturally and provide follow-up details if asked. Generic answers like 'I built microservices' or 'I worked on a backend' without specifics are red flags. Strong answers include measurable outcomes or challenges they personally solved."
+    },
+    {
+      "question_id": "Q2_GO_CONCEPTS",
+      "question_text": "Go is known for making concurrency easier than many other languages. Can you describe a time you used goroutines or channels in a real project? What problem were you solving, and why did you choose to use goroutines or channels instead of a different approach?",
+      "category": "Go-specific concepts",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "Candidate should demonstrate hands-on experience with Go's concurrency primitives and, critically, understand the *why* behind the choice. Look for: specific example from real code, clear explanation of the problem (e.g., 'we needed to handle 10,000 concurrent requests'), explanation of why goroutines/channels fit better than alternatives, and any trade-offs they considered. Weak answers describe what goroutines *are* without explaining when or why to use them. Strong answers show they've debugged concurrency issues, understood performance implications, or made deliberate architectural choices. Listen for concrete details like 'we used a buffered channel with size X' or 'we had a worker pool pattern with N goroutines'."
+    },
+    {
+      "question_id": "Q3_PRODUCTION_OPS",
+      "question_text": "Tell me about a Go service you've deployed to production. Walk me through how you handled things like making sure it stayed running reliably, monitoring what it was doing, and handling errors when things went wrong. What were the biggest operational challenges you faced?",
+      "category": "production deployment and operations",
+      "difficulty": "medium",
+      "time_allocation_minutes": 4,
+      "follow_up_questions": [],
+      "what_to_look_for": "Candidate should demonstrate production maturity and operational thinking. Look for: specific examples of reliability patterns (graceful shutdown, health checks, error recovery), monitoring/observability (logging, metrics, tracing), and concrete operational challenges they encountered and solved. Strong answers mention specific tools (Prometheus, structured logging, etc.), deployment strategies (rolling updates, canary deployments), or incident response. Weak answers are generic ('we had monitoring' without details) or focus only on writing code. Red flags include no discussion of error handling, no mention of how they debugged issues in production, or vague statements about 'reliability'. Listen for evidence they've been on-call, debugged production issues, or designed for resilience. Specific signals: mention of specific error patterns, timeout handling, retry logic, graceful degradation, or post-incident improvements."
+    }
+  ]
+}

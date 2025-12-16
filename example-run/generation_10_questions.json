@@ -1,0 +1,35 @@
+{
+  "title": "Senior Go Backend Engineer - Phone Screen (Recruiter Script)",
+  "description": "A 10-minute phone screen designed for non-technical recruiters to assess genuine hands-on Go experience, Go-specific concepts, and production operational awareness. Questions are scripted for clarity and easy pronunciation.",
+  "target_role": "Senior Go (Golang) Backend Engineer",
+  "total_time_minutes": 10,
+  "questions": [
+    {
+      "question_id": "Q1_PROJECT_EXPERIENCE",
+      "question_text": "Tell me about a Go backend project you built or maintained. What was the biggest technical challenge you had to solve, and how did you approach it?",
+      "category": "hands-on experience",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "Candidate should describe a specific, real project with concrete context (team size, scale, timeline, or business impact). They should identify one clear technical challenge and explain their solution approach. Strong answers include measurable context ('handled 500 requests per second', 'processed 2TB daily', 'served a team of 5') and specific technical decisions (caching strategy, memory management, concurrency approach). Weak answers are generic ('we built a service', 'it was a typical backend') or lack any technical depth."
+    },
+    {
+      "question_id": "Q2_GO_CONCEPTS",
+      "question_text": "Go has some unique features for handling concurrency and errors. Tell me about a time when you used goroutines, channels, or error handling in production. What would have been harder or different if you were using a different programming language?",
+      "category": "Go-specific knowledge",
+      "difficulty": "medium",
+      "time_allocation_minutes": 3,
+      "follow_up_questions": [],
+      "what_to_look_for": "Candidate should describe a real problem they solved using Go's concurrency or error handling features. Strong answers explain why the Go approach was better than alternatives—for example, 'goroutines use less memory than threads', 'channels prevented race conditions better than shared memory', or 'error wrapping with %w let us distinguish error types for retry logic'. Answers should show understanding of trade-offs (e.g., 'we chose mutexes over channels because our access pattern was read-heavy'). Weak answers name features without explaining why they matter ('we used goroutines', 'we handled errors') or describe Go features in isolation without comparison."
+    },
+    {
+      "question_id": "Q3_PRODUCTION_OPERATIONS",
+      "question_text": "Tell me about a time when a Go service you built caused an operational problem in production—maybe a performance issue, memory leak, a crash, or unexpected behavior. How did you debug it, and what did you learn?",
+      "category": "operational experience",
+      "difficulty": "medium",
+      "time_allocation_minutes": 4,
+      "follow_up_questions": [],
+      "what_to_look_for": "Candidate should describe a real operational incident with specific symptoms and debugging approach. Strong answers include: the symptom observed (memory growing, latency spiking, goroutines leaking), the debugging tool or method used (pprof, logging, race detector, monitoring), the root cause identified, and the fix applied. Excellent answers also discuss trade-offs or lessons learned ('we now use object pooling', 'we added monitoring to catch this earlier'). Weak answers are vague ('we had some issues', 'we fixed it') or describe problems that aren't really operational (like a logic bug in isolation)."
+    }
+  ]
+}

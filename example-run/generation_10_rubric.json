@@ -1,0 +1,166 @@
+{
+  "title": "Senior Go Backend Engineer - Phone Screen Scoring Rubric",
+  "overall_scoring_guidance": "This rubric evaluates candidates' genuine hands-on Go experience, Go-specific technical understanding, and production operational awareness. Score based on specificity of examples, clarity of technical reasoning, and evidence of real project experience. Use transcript matching patterns to identify concrete signals of competence. All candidates must provide specific examples with measurable context or technology names to score above 1. Trade-off awareness and constraint discussion distinguish exceptional (5) from strong (4) candidates. Apply fairness guardrails: do not penalize for project scale, company size, or tool choices; do penalize for generic answers, lack of specificity, and absent problem-solution pairing.",
+  "question_rubrics": [
+    {
+      "question_id": "Q1_PROJECT_EXPERIENCE",
+      "criteria": [
+        {
+          "criterion_id": "Q1_SPECIFICITY",
+          "name": "Specificity & Context",
+          "description": "Candidate provides concrete details about the project including measurable context (team size, scale, timeline, numbers) and/or specific technology names (HTTP, database, cache, goroutines, etc.). Demonstrates this was a real project they worked on, not a hypothetical.",
+          "weight": 1.5,
+          "score_1_description": "No measurable context or technology names. Generic language only ('service,' 'handled requests,' 'was standard'). Could describe any language or project.",
+          "score_3_description": "Includes at least one measurable detail (scale, timeline, team size) OR specific technology names (REST API, cache, goroutines, database). Clear this was a real project.",
+          "score_5_description": "Rich context with multiple specific details: scale (500 RPS, 2TB daily, team of 3), timeline, technology stack (Go, specific libraries), and explicit agency verbs ('I implemented,' 'I designed'). Vivid enough to visualize the project."
+        },
+        {
+          "criterion_id": "Q1_PROBLEM_SOLUTION",
+          "name": "Problem-Solution Pairing",
+          "description": "Candidate identifies a specific technical challenge and explains how they approached/solved it. Shows cause-effect thinking: problem → decision → outcome.",
+          "weight": 1.5,
+          "score_1_description": "No clear problem identified, or describes a feature without explaining why it mattered. 'We used caching' without saying what problem it solved.",
+          "score_3_description": "Identifies a specific challenge ('idempotency,' 'memory efficiency,' 'concurrency') and describes the approach taken. May lack explicit outcome but problem and solution are clear.",
+          "score_5_description": "Complete problem-solution arc with explicit outcome. Example: 'Challenge was backpressure on channels. We chose buffered channels but had to monitor memory carefully. This reduced latency by 40%.' Shows trade-off thinking."
+        },
+        {
+          "criterion_id": "Q1_TECHNICAL_DEPTH",
+          "name": "Technical Depth & Reasoning",
+          "description": "Candidate explains the reasoning behind their technical decision. Why did they choose this approach? What alternatives did they consider? What constraints did they face?",
+          "weight": 1.0,
+          "score_1_description": "No reasoning provided. 'We did X' with no explanation of why.",
+          "score_3_description": "Basic reasoning: 'We used caching because it's faster' or 'We chose goroutines for concurrency.' Explains one reason the choice mattered.",
+          "score_5_description": "Sophisticated reasoning with trade-off awareness. 'We could have used mutexes, but under load we'd see lock contention. Channels eliminated that, but added latency per request. We chose channels because our SLA cared more about p99 than p50.'"
+        }
+      ],
+      "example_excellent_answer": "I led a notification service in Go that served millions of users, handling about 100K events per second. The architectural challenge was implementing a pub-sub system using channels that could handle backpressure without dropping messages. We had to decide between buffered channels—simple but risky for memory—versus a separate queue with worker pools, which is safer but more complex. We went with buffered channels but implemented careful monitoring to watch memory usage. This let us keep the system simple while still being production-safe. The trade-off was that we had to be disciplined about channel sizing and monitoring.",
+      "example_poor_answer": "I've built several Go backends over the years. They were pretty standard applications that handled requests and processed data. We used goroutines and channels like most Go services do. It was a typical Go project.",
+      "red_flags": [
+        "Cannot name a specific project, team, or timeline",
+        "Uses only generic language ('service,' 'handled,' 'worked')",
+        "Describes Go features without explaining what problem they solved",
+        "No measurable context (scale, team size, timeline, numbers)",
+        "Vague problem statement ('we had issues,' 'it was challenging')",
+        "No explanation of technical decision-making",
+        "Answers could apply to any programming language"
+      ],
+      "bonus_indicators": [
+        "Mentions specific scale with context (e.g., '500 RPS with 3-person team')",
+        "Discusses trade-offs explicitly ('we chose X over Y because')",
+        "Names specific Go concepts used (goroutines, channels, defer, context)",
+        "Shows awareness of constraints or risks ('if we got this wrong, we'd lose data')",
+        "Explains why Go was the right choice for this problem",
+        "Mentions measurable outcome (latency improvement, memory reduction, etc.)"
+      ]
+    },
+    {
+      "question_id": "Q2_GO_CONCEPTS",
+      "criteria": [
+        {
+          "criterion_id": "Q2_GO_FEATURE_NAMING",
+          "name": "Go-Specific Feature Identification",
+          "description": "Candidate names a specific Go construct (goroutines, channels, mutex, context, error wrapping, defer, etc.) and grounds it in a real production scenario, not abstract discussion.",
+          "weight": 1.5,
+          "score_1_description": "Names a Go feature but provides no context ('Go has goroutines') or only hypothetical use ('you could use channels to...'). No reference to real project.",
+          "score_3_description": "Names a specific Go feature and references a real project or production scenario. Example: 'We used goroutines to handle concurrent HTTP requests in our API.'",
+          "score_5_description": "Names a specific Go feature with rich production context. Example: 'We wrapped errors with fmt.Errorf using %w so we could use errors.Is() and errors.As() to distinguish between retryable timeouts and permanent permission errors in our retry logic.'"
+        },
+        {
+          "criterion_id": "Q2_CAUSAL_REASONING",
+          "name": "Causal Reasoning (Why It Mattered)",
+          "description": "Candidate explains why this Go feature mattered for their problem. Uses causal language ('because,' 'so that,' 'to avoid,' 'required') to connect feature to outcome.",
+          "weight": 1.5,
+          "score_1_description": "No reasoning provided. Names feature with no explanation of why it was chosen or what it enabled.",
+          "score_3_description": "Provides basic causal reasoning. 'We used goroutines because they're lightweight' or 'Error wrapping so we could identify error types.'",
+          "score_5_description": "Sophisticated causal reasoning with explicit problem-solution connection. 'We used channels because shared memory with mutexes would have lock contention under load. Channels gave us safe concurrent access without locks, which was critical for our 100K RPS throughput.'"
+        },
+        {
+          "criterion_id": "Q2_LANGUAGE_COMPARISON",
+          "name": "Go vs. Other Languages Awareness",
+          "description": "Candidate demonstrates understanding of how Go's approach differs from other languages. Shows awareness of Go's strengths and trade-offs relative to alternatives.",
+          "weight": 1.0,
+          "score_1_description": "No comparison to other languages. Treats Go features as universal rather than Go-specific.",
+          "score_3_description": "Makes a simple comparison. 'Unlike Java, goroutines don't require thread pools' or 'Go's error handling is different from exceptions.'",
+          "score_5_description": "Sophisticated comparison showing deep understanding. 'In Java, we'd need thread pools with fixed sizes and queues. Goroutines let us spawn thousands without memory overhead, but we had to be careful about goroutine leaks—Java's thread pools naturally bounded the number of threads.'"
+        }
+      ],
+      "example_excellent_answer": "We initially used mutexes to protect our in-memory cache, but under load we saw lock contention slowing everything down. We switched to channels with a dedicated goroutine managing the cache, which eliminated the contention. The trade-off was slightly higher latency per individual request, since everything had to go through one goroutine, but our p99 latency became much more predictable, which mattered more for our SLA. In Java, we'd probably use a concurrent hash map, which would have different trade-offs around lock granularity. Go's channel approach forced us to think differently about synchronization.",
+      "example_poor_answer": "Go has goroutines, and we used them in our system. They're lightweight compared to threads. We also handled errors properly in our code.",
+      "red_flags": [
+        "Names a Go feature but provides no real project context",
+        "Describes feature without explaining why it was chosen",
+        "No causal language connecting feature to problem solved",
+        "Treats Go features as language-agnostic (could apply to any language)",
+        "Cannot explain trade-offs or constraints of the chosen approach",
+        "Vague or generic explanation ('goroutines are good for concurrency')",
+        "No mention of what would have been different in another language"
+      ],
+      "bonus_indicators": [
+        "Explicitly discusses trade-offs ('simpler but riskier,' 'safer but more complex')",
+        "Compares to specific other languages (Java threads, Python GIL, etc.)",
+        "Explains why Go's approach was better for their specific problem",
+        "Mentions multiple Go features and how they interact (goroutines + channels, context + error handling)",
+        "Shows awareness of Go's design philosophy (simplicity, concurrency primitives)",
+        "Discusses constraint that forced the choice ('we had to use channels because')"
+      ]
+    },
+    {
+      "question_id": "Q3_PRODUCTION_OPERATIONS",
+      "criteria": [
+        {
+          "criterion_id": "Q3_PROBLEM_SPECIFICITY",
+          "name": "Operational Problem Specificity",
+          "description": "Candidate describes a specific, concrete operational problem (memory leak, latency spike, panic, race condition, goroutine leak, etc.) with measurable impact or clear symptoms.",
+          "weight": 1.5,
+          "score_1_description": "No specific problem, or too vague to understand. 'We had issues in production' or 'The service had problems.'",
+          "score_3_description": "Specific problem type named with clear symptoms. 'Memory leak—we noticed memory climbing 100MB per hour' or 'Latency spike under peak load' or 'Panic in production.'",
+          "score_5_description": "Highly specific problem with measurable impact and root cause. 'Goroutine leak in the HTTP client—goroutines spawned by the client weren't being cancelled on request timeout, causing memory to grow unboundedly at 100MB/hour until the service ran out of memory.'"
+        },
+        {
+          "criterion_id": "Q3_DEBUGGING_APPROACH",
+          "name": "Debugging & Investigation Method",
+          "description": "Candidate explains how they discovered the root cause. Names specific tools (pprof, race detector, logging, monitoring) or methods (profiling, tracing, code review) used to diagnose the problem.",
+          "weight": 1.5,
+          "score_1_description": "No debugging method described. 'We found the problem' or 'We figured it out.'",
+          "score_3_description": "Names a specific debugging tool or method. 'We profiled with pprof' or 'We added logging' or 'We used the race detector' or 'We checked monitoring.'",
+          "score_5_description": "Detailed debugging narrative showing systematic investigation. 'We noticed memory climbing in monitoring, profiled with pprof to see goroutine count, traced goroutines back to the HTTP client, and realized they weren't being cancelled. We verified the fix by running pprof again and confirming goroutine count stabilized.'"
+        },
+        {
+          "criterion_id": "Q3_RESOLUTION_AND_LEARNING",
+          "name": "Resolution & Insight",
+          "description": "Candidate explains how they fixed the problem and what they learned. Shows cause-effect thinking and reflects on implications.",
+          "weight": 1.0,
+          "score_1_description": "No resolution described, or vague outcome. 'We fixed it' with no explanation.",
+          "score_3_description": "Clear resolution with measurable outcome. 'We fixed the goroutine lifecycle management, and memory stopped growing' or 'We added caching, which reduced latency by 50%.'",
+          "score_5_description": "Resolution with explicit learning and constraint awareness. 'We fixed it by ensuring all goroutines respected context cancellation. The hard part was understanding that the HTTP client could spawn goroutines we didn't explicitly create—that taught us to be more careful about context propagation throughout the codebase. Without this fix, the service would eventually run out of memory and crash.'"
+        }
+      ],
+      "example_excellent_answer": "A goroutine leak in production caused memory to grow unboundedly. We noticed it from monitoring—memory was climbing 100MB per hour. We profiled the service with pprof and saw goroutine count was growing linearly. We traced it to goroutines spawned by the HTTP client that weren't being cancelled on request timeout. We fixed it by ensuring all goroutines respected context cancellation. The hard part was realizing the HTTP client could spawn goroutines we didn't explicitly create. That taught us to be more careful about context propagation. Without that fix, the service would eventually run out of memory and crash.",
+      "example_poor_answer": "We deployed our Go service to production and it worked fine. We had some operational issues, but I don't remember the details.",
+      "red_flags": [
+        "Cannot describe a specific operational problem",
+        "No debugging method or tool mentioned",
+        "Vague resolution ('we fixed it' with no explanation)",
+        "No measurable impact or outcome",
+        "Describes a problem that doesn't require Go-specific knowledge to solve",
+        "No reflection on root cause or learning",
+        "Answers that could apply to any language or system"
+      ],
+      "bonus_indicators": [
+        "Names specific debugging tool (pprof, race detector, monitoring system)",
+        "Provides measurable metrics (memory growth rate, latency improvement, GC pause reduction)",
+        "Explains root cause with Go-specific detail (goroutine leak, race condition, memory allocation)",
+        "Discusses trade-offs in the fix ('we chose X over Y')",
+        "Shows systematic debugging approach (observe → hypothesize → test → verify)",
+        "Reflects on learning or process improvement ('taught us to...')",
+        "Explains consequence if problem wasn't fixed ('would eventually crash')"
+      ]
+    }
+  ],
+  "hiring_recommendation_thresholds": {
+    "strong_hire": 4.0,
+    "hire": 3.5,
+    "marginal": 3.0,
+    "no_hire": 2.5
+  }
+}

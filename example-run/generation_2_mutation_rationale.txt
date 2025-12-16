@@ -1,0 +1,54 @@
+## Mutations Made to Address Weaknesses
+
+### 1. **Rubric LLM Compatibility (80 → target 90+)**
+**Problem**: The existing rubric guidance didn't provide enough concrete patterns for LLM matching against transcripts.
+
+**Solution**: 
+- Added **"Transcript Evidence Requirements"** section that explicitly defines what observable patterns the LLM should detect at each score level (1, 3, 5)
+- Added **"Concrete Pattern Matching for LLM"** section with specific keywords and phrase structures (measurability indicators, technical specificity, challenge/solution pairs, operational depth) that the LLM can reliably match in transcripts
+- This allows the LLM to move beyond fuzzy semantic matching to pattern-based detection of competence signals
+
+### 2. **Rubric Objectivity (82 → target 92+)**
+**Problem**: Criteria were described in general terms ("demonstrates production thinking") without clear, measurable thresholds.
+
+**Solution**:
+- Added **"Minimum Viable Evidence of Competence (MVEC)"** section that specifies exactly what MUST appear in a transcript for a passing score
+- Made these requirements specific to each question's learning goal (e.g., Question 1 requires "measurable context," Question 2 requires "Go-specific construct + explanation")
+- Added **"Discrimination Anchors"** that show the comparative jump between score levels with concrete examples of what changes (generic → specific → trade-off reasoning)
+- This removes ambiguity and makes scoring deterministic
+
+### 3. **Question Depth (85 → target 92+)**
+**Problem**: Questions were solid but could naturally elicit deeper responses within the 3-minute constraint.
+
+**Solution**:
+- Added **"Question Design Guidance for Depth and Layering"** section to the question prompt
+- Redesigned question structures to prompt for layered responses without requiring follow-ups:
+  - Q1: Ask for project + ONE key challenge (creates natural depth)
+  - Q2: Ask for feature + real problem solved + language comparison (forces contextual thinking)
+  - Q3: Ask for operational failure + debugging + learning (forces concrete problem-solving narrative)
+- These structures are built into the questions themselves, so candidates naturally provide specificity and depth
+
+### 4. **Alignment Improvement** (89 → target 95+)
+**Solution**:
+- The new MVEC section explicitly maps each question's rubric requirements back to the coverage goals
+- The "Concrete Pattern Matching" section ties directly to the red/green flags already defined
+- The question guidance examples show exactly what evidence the rubric will be looking for
+
+### 5. **Calibration Support** (85 → target 92+)
+**Solution**:
+- Added realistic quote examples for each score level (1, 3, 5) that show progression from weak to exceptional
+- These quotes help the LLM understand the difference between "mentions a project" vs. "provides measurable scale" vs. "discusses trade-offs"
+- Quotes are realistic and based on senior-level Go engineer language patterns
+
+## What Was Preserved
+- All three core learning goals remain unchanged
+- Question count (3) and time allocation (~10 min) unchanged
+- Red/green flags incorporated into new rubric structure
+- Non-technical readability requirement maintained
+- Coverage map requirement maintained
+
+## Why These Changes Work Together
+- **Better depth** in questions + **clearer MVEC** = LLM knows exactly what to listen for
+- **Concrete pattern matching** + **realistic quotes** = LLM can reliably score without human calibration
+- **Discrimination anchors** = Clear progression means LLM can distinguish between 3 and 5, not just "good" and "bad"
+- **Question design guidance** = Recruiters naturally elicit the evidence the rubric is designed to measure

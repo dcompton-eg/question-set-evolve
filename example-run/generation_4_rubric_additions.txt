@@ -1,0 +1,58 @@
+## Enhanced LLM Compatibility and Objectivity
+
+### Transcript Evidence Requirements
+For EVERY score level (1, 3, 5), provide **concrete observable transcript patterns** the LLM should detect:
+
+**Example format for a criterion:**
+- **Score 1**: Candidate uses only generic language ("I used concurrency," "we handled errors") with NO mention of specific Go constructs (goroutines, channels, defer, error types) AND no measurable context (scale, QPS, user count, timeline)
+- **Score 3**: Candidate names at least ONE Go-specific mechanism (goroutines, channels, error wrapping, defer, interfaces) AND explains why they used it in their specific context
+- **Score 5**: Candidate describes a Go-specific mechanism AND explains both why it was chosen AND what trade-offs or constraints it addressed in their project
+
+### Concrete Pattern Matching for LLM
+For each question, specify exact phrases or sentence patterns the LLM should match:
+- Measurability indicators: "handled X requests," "served Y users," "processed Z MB/sec," "latency was N milliseconds," "team of M people"
+- Technical specificity: "goroutines," "channels," "context cancellation," "defer," "error wrapping," "interface{}", "mutex," "sync.WaitGroup," specific package names ("database/sql", "net/http", "encoding/json")
+- Challenge/solution pairs: "the problem was [X], so we [Y]," "initially we [X], but then we [Y] because [reason]," "we had to trade off [X] for [Y]"
+- Operational depth: "monitored with," "debugged by," "deployed to," "metrics showed," "latency spike," "memory leak," "graceful shutdown"
+
+### Minimum Viable Evidence of Competence (MVEC)
+**For each question, explicitly define what MUST appear in the transcript for a passing (3+) score:**
+
+**Question 1 (Project Experience) MVEC:**
+- Must name a specific technology/framework/service type (e.g., "REST API", "microservice", "worker", "gRPC service")
+- Must mention at least one measurable context (team size, scale, timeline, or user impact)
+- Must identify at least one technical decision or challenge they faced
+
+**Question 2 (Go-Specific Concepts) MVEC:**
+- Must name at least one Go-specific construct (goroutines, channels, error types, defer, interfaces, context)
+- Must explain why they used it (performance, clarity, concurrency model, etc.)
+- Must reference a real project or scenario (not hypothetical)
+
+**Question 3 (Production/Operations) MVEC:**
+- Must describe a specific operational problem (not generic "we deployed")
+- Must explain how they discovered or debugged the issue
+- Must mention at least one measurable outcome or learning
+
+### Discrimination Anchors with Comparative Depth
+For each criterion, explicitly describe score progression:
+
+**Example:**
+- **Score 1→3 jump**: Candidate adds GO-SPECIFIC TERMINOLOGY and MEASURABLE CONTEXT. Generic answer ("we used concurrency") becomes specific ("we used goroutines to handle 10K concurrent requests")
+- **Score 3→5 jump**: Candidate adds TRADE-OFF REASONING or COMPARATIVE THINKING. Specific answer ("we used channels for communication") becomes expert answer ("we chose channels over shared memory because our team prioritizes safety over raw performance, even though channels have higher overhead")
+
+### LLM Scoring Calibration with Realistic Quotes
+For each score level (1, 3, 5), provide 2 realistic quote examples the LLM can use to calibrate:
+
+**Example for Question 1, Score 1 (Weak):**
+- "I've built several Go backends over the years. They were pretty standard REST APIs."
+- "We built a service in Go. It was a typical microservice that handled requests and stored data."
+
+**Example for Question 1, Score 3 (Baseline):**
+- "I built a payment processing microservice at my last company that handled about 500 requests per second. The main challenge was ensuring idempotency across retries without hitting the database too hard."
+- "We rewrote our data pipeline in Go from Python. The service processes 2TB of logs daily across a team of 4 engineers. The tricky part was managing goroutines without running out of memory."
+
+**Example for Question 1, Score 5 (Exceptional):**
+- "I led the development of a real-time notification service in Go that served 50 million users across three regions. We handled 100K events per second. The architectural challenge was implementing a pub-sub system using channels that could gracefully handle backpressure without dropping messages, which required careful goroutine lifecycle management."
+- "I built a distributed tracing service in Go from scratch. It ingested spans from 200+ microservices, processed them through a pipeline, and stored them in Elasticsearch. We had to optimize for both throughput (2M spans/sec) and tail latency. The biggest learning was how Go's memory allocator behaves under high concurrency."
+
+(Provide similar quote examples for all questions and score levels)

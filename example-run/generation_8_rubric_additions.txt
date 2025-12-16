@@ -1,0 +1,157 @@
+## Objective Criterion Definitions for LLM Scoring
+
+### Criterion 1: Specificity & Context (applies to all questions)
+**Objective definition**: Candidate provides measurable, verifiable details that ground their answer in reality.
+
+**Observable patterns to detect:**
+- **Score 1**: Answer contains ONLY generic language with NO measurable details. Examples: "I built a service," "we handled requests," "it was a backend."
+- **Score 3**: Answer includes AT LEAST ONE of: (1) numerical context (RPS, users, team size, MB/sec, timeline), (2) specific technology names (goroutines, channels, SQL, HTTP), or (3) named role (I led, I implemented, I debugged)
+- **Score 5**: Answer includes BOTH (1) measurable context AND (2) specific technology or role, creating a concrete mental model
+
+**LLM matching patterns:**
+- Measurability: Numbers, timeframes, counts ("handled 500 RPS," "team of 3," "6 months," "50 million users")
+- Specificity: Package/tool names ("net/http", "database/sql", "goroutines", "channels", "mutex")
+- Agency: First-person technical action verbs ("I implemented," "I debugged," "I optimized," "I designed")
+
+---
+
+### Criterion 2: Go-Specific Reasoning (applies to Questions 2 and 3)
+**Objective definition**: Candidate demonstrates WHY a Go feature or approach mattered for their problem, not just THAT they used it.
+
+**Observable patterns to detect:**
+- **Score 1**: Candidate names a Go feature but provides NO explanation of why or benefit. Examples: "We used goroutines," "We wrapped errors," "We used channels."
+- **Score 3**: Candidate names a Go feature AND provides ONE reason it mattered. Examples: "We used goroutines to handle concurrent requests," "We used error wrapping so we could identify failure types."
+- **Score 5**: Candidate explains a Go feature AND discusses a trade-off, constraint, or comparative advantage. Examples: "We chose channels over shared memory because they're safer for our team, even though they're slower," "We used context cancellation to ensure graceful shutdown without losing messages."
+
+**LLM matching patterns:**
+- Causal connectors: "because," "so that," "to avoid," "required," "forced us to"
+- Trade-off language: "instead of," "trade off," "downside," "benefit," "constraint," "had to choose"
+- Comparative thinking: "different from," "better than," "worse than," "Go's way," "unlike X language"
+
+---
+
+### Criterion 3: Problem-Solution Pairing (applies to all questions)
+**Objective definition**: Candidate identifies a concrete problem they faced and explains how they addressed it.
+
+**Observable patterns to detect:**
+- **Score 1**: Answer describes what they built with NO mention of challenges, problems, or decisions. Example: "I built a REST API in Go that handled requests."
+- **Score 3**: Answer identifies ONE problem/challenge AND describes ONE solution or approach. Example: "The challenge was handling concurrent requests safely, so we used goroutines with channels."
+- **Score 5**: Answer identifies a problem, explains why it was hard, AND describes how the solution addressed constraints or trade-offs. Example: "We had to process 100K events per second without losing data. We initially used shared maps with mutexes, but that created lock contention. We switched to channels with a buffered queue, which reduced latency by 40% but required careful goroutine lifecycle management."
+
+**LLM matching patterns:**
+- Problem indicators: "challenge," "problem," "issue," "bottleneck," "difficult," "had to solve," "difficult part"
+- Solution indicators: "so we," "we decided to," "we implemented," "we switched to," "we chose"
+- Outcome indicators: "reduced," "improved," "fixed," "learned," "resulted in," "showed"
+
+---
+
+### Transcript-Matchable Scoring Rules
+
+**For ALL questions, use this decision tree:**
+
+1. **Does the answer contain measurable context OR specific Go terminology?**
+   - NO → Score cannot exceed 1
+   - YES → Continue
+
+2. **Does the answer include a problem-solution pair?**
+   - NO → Score capped at 2
+   - YES → Continue
+
+3. **Does the answer explain WHY the solution mattered (causal reasoning)?**
+   - NO → Score is 3 (baseline competence)
+   - YES → Continue
+
+4. **Does the answer discuss trade-offs, constraints, or comparative thinking?**
+   - NO → Score is 4
+   - YES → Score is 5
+
+---
+
+### Minimum Viable Evidence of Competence (MVEC) - Revised
+
+**Question 1 (Project Experience) MVEC for Score 3+:**
+- Must include ONE of: (a) specific project type, (b) measurable scale/context, OR (c) team context
+- Must identify a technical challenge or decision
+- Must explain how they approached or solved it
+- **Fairness note**: Project type/scale does NOT determine score. A 1K RPS service with a well-explained challenge = same competence as 1M RPS service.
+
+**Question 2 (Go Concepts) MVEC for Score 3+:**
+- Must name at least one Go-specific construct (goroutines, channels, error types, defer, interfaces, context, mutexes, etc.)
+- Must reference a real project/scenario (not hypothetical)
+- Must provide ONE reason it mattered for their problem
+- **Fairness note**: Any valid Go concurrency/error approach counts. Channels, mutexes, error wrapping, custom types—all equivalent for scoring purposes.
+
+**Question 3 (Production/Operations) MVEC for Score 3+:**
+- Must describe a specific operational problem (not generic "we deployed")
+- Must explain how they discovered, debugged, or resolved it
+- Must indicate learning or outcome
+- **Fairness note**: Problem size doesn't matter. A single-threaded memory bug debugged well = distributed race condition debugged well.
+
+---
+
+### Calibration Quotes with Fairness Variants
+
+**Question 1, Score 1 (Weak) - Examples:**
+- "I've built several Go backends over the years. They were pretty standard."
+- "We built a service in Go. It was a typical application that handled requests."
+
+**Question 1, Score 3 (Baseline) - Examples (note: different scales, same score):**
+- "I built a payment processing service at my last company that handled about 500 requests per second. The main challenge was ensuring idempotency without hitting the database too hard."
+- "I built a small internal tool in Go that processes CSV files. The tricky part was managing memory when files were larger than RAM, so I implemented streaming processing."
+- "We rewrote our data pipeline in Go. The service processes about 2TB of logs daily. The challenge was managing goroutines efficiently without memory leaks."
+
+**Question 1, Score 5 (Exceptional) - Examples (note: different scales, same score):**
+- "I led a notification service in Go that served 50 million users. We handled 100K events per second. The architectural challenge was implementing a pub-sub system using channels that could handle backpressure without dropping messages."
+- "I built a distributed tracing system in Go from scratch. We had to optimize for both throughput (2M spans/sec) and tail latency. The biggest learning was understanding Go's memory allocator behavior under high concurrency—we reduced GC pauses by 60%."
+- "I built a background job processor in Go for a 20-person team. It handled 5K jobs per second with retries. The challenge was designing a graceful shutdown that wouldn't lose in-flight work, which required careful context cancellation and WaitGroup coordination."
+
+**Question 2, Score 1 (Weak) - Examples:**
+- "Go has goroutines, and we used them in our system."
+- "We handled errors in our Go service. It's important to handle errors properly."
+
+**Question 2, Score 3 (Baseline) - Examples (note: different approaches, same score):**
+- "We used goroutines to handle concurrent HTTP requests. Without goroutines, we'd have needed thread pools like in Java, and we'd use more memory."
+- "We implemented custom error types that wrapped the underlying error so we could distinguish between network timeouts and database errors in our monitoring."
+- "We used context cancellation to handle request timeouts gracefully. If a client disconnected, we'd stop processing and free up resources immediately."
+
+**Question 2, Score 5 (Exceptional) - Examples (note: different approaches, same score):**
+- "We initially used mutexes to protect our in-memory cache, but under load we saw lock contention. We switched to channels with a dedicated goroutine, which eliminated the contention. The trade-off was slightly higher latency per request, but much more predictable p99 latency."
+- "We wrapped errors at every layer using fmt.Errorf with %w so we could use errors.Is() and errors.As() for type-based error handling. This let us distinguish between retryable errors and permanent failures, which was critical for our retry logic."
+- "We used sync.WaitGroup to coordinate graceful shutdown of multiple goroutines handling different tasks. We had to balance giving goroutines time to finish work against a hard timeout. We settled on 30 seconds with a per-goroutine context timeout, which reduced message loss from 2% to near-zero."
+
+**Question 3, Score 1 (Weak) - Examples:**
+- "We deployed our Go service to production and it worked fine."
+- "We had some operational issues, but I don't remember the details."
+
+**Question 3, Score 3 (Baseline) - Examples (note: different problem types, same score):**
+- "We had a memory leak in production. We profiled the service with pprof and found that goroutines weren't being cleaned up properly. We fixed the goroutine lifecycle management and the memory stopped growing."
+- "Our service was slow sometimes. We added logging and realized we were making too many database queries. We implemented caching, which reduced latency significantly."
+- "We had an unexpected panic in production. We added better error handling and logging to understand where it came from. We discovered it was a nil pointer dereference in error handling code."
+
+**Question 3, Score 5 (Exceptional) - Examples (note: different problem types, same score):**
+- "We had a latency spike under peak load. I used pprof to profile CPU and found we were allocating too much memory in the hot path. We switched to object pooling and reduced GC pause time from 50ms to 5ms, which improved p99 latency by 60%."
+- "A goroutine leak in production caused memory to grow unboundedly. We discovered it because monitoring showed memory climbing 100MB/hour. We traced it to goroutines spawned by the HTTP client that weren't being cancelled on request timeout. We fixed it by ensuring all goroutines respected context cancellation."
+- "We discovered a race condition in production where concurrent updates to a map caused panics. We debugged it with the race detector and realized we needed synchronization. We chose RWMutex over channels because our access pattern was read-heavy, and this reduced lock contention by 80%."
+
+---
+
+### LLM-Specific Scoring Guidance
+
+**Pattern Matching Priority Order:**
+1. First, check for MVEC presence (if missing, score ≤ 2)
+2. Second, check for problem-solution pairing (if weak, score ≤ 3)
+3. Third, check for causal reasoning (if weak, score ≤ 4)
+4. Finally, check for trade-off/comparative thinking (if present, score 5)
+
+**Fairness Override Rules for LLM:**
+- DO NOT penalize based on project scale, company size, or role title
+- DO NOT require specific frameworks, tools, or languages (except Go)
+- DO NOT assume certain career paths are "better" (startup vs. enterprise, FAANG vs. other)
+- DO penalize generic answers without specificity
+- DO penalize lack of technical reasoning
+- DO penalize inability to explain trade-offs or constraints
+
+**Ambiguity Resolution:**
+- If a candidate uses non-standard terminology for a Go concept (e.g., "lightweight threads" for goroutines), accept it if the meaning is clear from context
+- If a candidate describes an equivalent approach (e.g., custom error handling vs. standard error wrapping), score equivalently
+- If uncertain whether a detail is specific enough, ask: "Would a junior Go engineer understand what they're talking about?" If yes, count it.
