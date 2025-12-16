@@ -84,8 +84,17 @@ def create_mutation_prompt(
     original_question_prompt: str,
     current_rubric_additions: str,
     feedback: JudgeFeedback,
+    rubric_base_system_prompt: str = "",
 ) -> str:
-    """Create a prompt for mutating the design prompts."""
+    """Create a prompt for mutating the design prompts.
+
+    Args:
+        original_question_prompt: The current question generation prompt
+        current_rubric_additions: Current additions to the rubric prompt
+        feedback: Judge feedback on the current candidate
+        rubric_base_system_prompt: The base system prompt used by the rubric writer,
+            so the mutator knows what's already specified and won't duplicate/conflict
+    """
     scores = feedback.scores
 
     # Identify lowest scoring dimensions
@@ -105,6 +114,20 @@ def create_mutation_prompt(
     sorted_dims = sorted(dimension_scores, key=lambda x: x[1])
     weakest = sorted_dims[:3]  # Top 3 weakest areas
 
+    # Build the rubric context section
+    rubric_context = ""
+    if rubric_base_system_prompt:
+        rubric_context = f"""## Rubric Writer Base System Prompt
+The following system prompt is already provided to the rubric writer. Do NOT duplicate these
+instructions in your rubric_prompt_additions, and do NOT add conflicting instructions.
+Your rubric_prompt_additions should only add NEW guidance that complements this base prompt.
+
+<rubric_base_system_prompt>
+{rubric_base_system_prompt}
+</rubric_base_system_prompt>
+
+"""
+
     return f"""Mutate the following prompts to improve interview material quality.
 
 ## Current Question Prompt
@@ -113,7 +136,7 @@ def create_mutation_prompt(
 ## Current Rubric Prompt Additions
 {current_rubric_additions if current_rubric_additions else "(None yet)"}
 
-## Judge Feedback
+{rubric_context}## Judge Feedback
 
 ### Scores (0-100)
 - Question Clarity: {scores.question_clarity}
@@ -139,7 +162,7 @@ def create_mutation_prompt(
 
 ## Your Task
 1. Create an improved question prompt that addresses weaknesses while keeping strengths
-2. Create rubric prompt additions that improve rubric quality
+2. Create rubric prompt additions that improve rubric quality (only add NEW guidance not already in the base system prompt)
 3. Ensure the changes improve alignment between questions and rubric
 4. Explain your mutations
 

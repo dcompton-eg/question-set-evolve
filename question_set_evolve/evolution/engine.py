@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from ..agents.question_writer import question_writer_agent
-from ..agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
+from ..agents.rubric_writer import rubric_writer_agent, create_rubric_prompt, RUBRIC_WRITER_SYSTEM_PROMPT
 from ..agents.llm_as_judge import judge_agent, JudgeFeedback, create_judge_prompt
 from ..agents.mutator import mutator_agent, MutatedPrompts, create_mutation_prompt
 from ..models import QuestionSet, ScoringRubric
@@ -196,11 +196,11 @@ class QuestionSetEvolutionEngine:
         if candidate.feedback is None:
             raise ValueError("Candidate must be evaluated first")
 
-        # TODO: there may be a blind spot in that the base prompt is not included in mutation.
         prompt = create_mutation_prompt(
             candidate.question_prompt,
             candidate.rubric_prompt_additions,
             candidate.feedback,
+            rubric_base_system_prompt=RUBRIC_WRITER_SYSTEM_PROMPT,
         )
         result = await mutator_agent.run(prompt)
         input_tokens, output_tokens = self._extract_usage(result)
