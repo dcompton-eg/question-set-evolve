@@ -104,11 +104,13 @@ class QuestionSetEvolutionEngine:
         base_question_prompt: str,
         num_children: int = 4,
         output_dir: Optional[Path] = None,
+        verbose: bool = False,
     ):
         self.base_question_prompt = base_question_prompt
         self.num_children = num_children  # λ in (1+λ) ES
         self.output_dir = output_dir or Path("output")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.verbose = verbose
 
         # ID counter for generating unique candidate IDs
         self._next_id = 0
@@ -273,13 +275,14 @@ class QuestionSetEvolutionEngine:
               self.num_children} children from parent [{self.parent.id}]...")
         children = await self._generate_children(gen_usage)
 
-        # Print mutation details for each child
-        for child in children:
-            if child.mutation_rationale:
-                print(f"\n[{child.id}] Mutation rationale:")
-                # Print each line indented
-                for line in child.mutation_rationale.strip().split("\n"):
-                    print(f"         {line}")
+        # Print mutation details for each child (only in verbose mode)
+        if self.verbose:
+            for child in children:
+                if child.mutation_rationale:
+                    print(f"\n[{child.id}] Mutation rationale:")
+                    # Print each line indented
+                    for line in child.mutation_rationale.strip().split("\n"):
+                        print(f"         {line}")
 
         # Process all children in parallel
         print(f"\n[EVAL] Evaluating {len(children)} children...")

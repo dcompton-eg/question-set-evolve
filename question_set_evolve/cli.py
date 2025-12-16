@@ -125,6 +125,7 @@ async def cmd_evolve(args: argparse.Namespace) -> None:
         base_question_prompt=prompt,
         num_children=args.children,
         output_dir=output_dir,
+        verbose=args.verbose,
     )
 
     results = await engine.evolve(args.generations)
@@ -391,6 +392,10 @@ def main() -> None:
     evolve_parser.add_argument(
         "--children", "-c", type=int, default=4,
         help="Number of children (mutants) per generation (λ in (1+λ) ES)"
+    )
+    evolve_parser.add_argument(
+        "--verbose", "-v", action="store_true",
+        help="Print detailed output including mutation rationales"
     )
 
     # Score command
