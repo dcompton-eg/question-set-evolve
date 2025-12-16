@@ -123,9 +123,7 @@ async def cmd_evolve(args: argparse.Namespace) -> None:
 
     engine = QuestionSetEvolutionEngine(
         base_question_prompt=prompt,
-        population_size=args.population,
-        tournament_size=args.tournament_size,
-        mutation_rate=args.mutation_rate,
+        num_children=args.children,
         output_dir=output_dir,
     )
 
@@ -391,13 +389,8 @@ def main() -> None:
         "--generations", "-g", type=int, default=5, help="Number of generations"
     )
     evolve_parser.add_argument(
-        "--population", "-p", type=int, default=4, help="Population size"
-    )
-    evolve_parser.add_argument(
-        "--tournament-size", "-t", type=int, default=2, help="Tournament size"
-    )
-    evolve_parser.add_argument(
-        "--mutation-rate", "-m", type=float, default=0.5, help="Mutation rate"
+        "--children", "-c", type=int, default=4,
+        help="Number of children (mutants) per generation (λ in (1+λ) ES)"
     )
 
     # Score command
