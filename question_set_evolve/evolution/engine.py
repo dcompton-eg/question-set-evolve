@@ -1,13 +1,12 @@
 """Evolution engine for co-evolving question sets and scoring rubrics."""
 
 import asyncio
-import random
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
 from ..agents.question_writer import question_writer_agent
-from ..agents.rubric_writer import rubric_writer_agent, create_rubric_prompt
+from ..agents.rubric_writer import rubric_writer_agent, create_rubric_prompt, RUBRIC_WRITER_SYSTEM_PROMPT
 from ..agents.llm_as_judge import judge_agent, JudgeFeedback, create_judge_prompt
 from ..agents.mutator import mutator_agent, MutatedPrompts, create_mutation_prompt
 from ..models import QuestionSet, ScoringRubric
@@ -53,7 +52,8 @@ class TokenUsage:
     def __str__(self) -> str:
         return (
             f"Tokens: {self.input_tokens:,} in / {self.output_tokens:,} out | "
-            f"Cost: ${self.input_cost:.4f} in + ${self.output_cost:.4f} out = ${self.total_cost:.4f}"
+            f"Cost: ${
+                self.input_cost:.4f} in + ${self.output_cost:.4f} out = ${self.total_cost:.4f}"
         )
 
 
@@ -61,8 +61,13 @@ class TokenUsage:
 class EvolutionCandidate:
     """A candidate in the evolution process."""
 
+    id: str  # Unique identifier (e.g., "P0", "C1", "C2")
     question_prompt: str
+    # ID of parent candidate (None for initial)
+    parent_id: Optional[str] = None
     rubric_prompt_additions: str = ""
+    # Explanation of mutations applied to create this candidate
+    mutation_rationale: str = ""
     question_set: Optional[QuestionSet] = None
     rubric: Optional[ScoringRubric] = None
     feedback: Optional[JudgeFeedback] = None
@@ -81,31 +86,53 @@ class GenerationResult:
 
 
 class QuestionSetEvolutionEngine:
-    """Engine for evolving question sets and rubrics through tournament selection."""
+    """Engine for evolving question sets and rubrics using (1+λ) Evolution Strategy.
+
+    The (1+λ) ES is the standard algorithm for "high-cost" optimization:
+    - 1 Parent: The current best candidate (champion)
+    - λ Children: Mutants generated from the parent each generation
+
+    Each generation:
+    1. Generate λ mutants from the current best
+    2. Evaluate all children
+    3. If any child beats the parent, it becomes the new parent
+    4. Otherwise, the parent survives unchanged
+    """
 
     def __init__(
         self,
         base_question_prompt: str,
-        population_size: int = 4,
-        tournament_size: int = 2,
-        mutation_rate: float = 0.5,
+        num_children: int = 4,
         output_dir: Optional[Path] = None,
+        verbose: bool = False,
     ):
         self.base_question_prompt = base_question_prompt
-        self.population_size = population_size
-        self.tournament_size = tournament_size
-        self.mutation_rate = mutation_rate
+        self.num_children = num_children  # λ in (1+λ) ES
         self.output_dir = output_dir or Path("output")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.verbose = verbose
 
-        # Initialize population with base prompt
-        self.population: list[EvolutionCandidate] = [
-            EvolutionCandidate(question_prompt=base_question_prompt)
-            for _ in range(population_size)
-        ]
+        # ID counter for generating unique candidate IDs
+        self._next_id = 0
+
+        # Initialize with a single parent (the champion)
+        self.parent = EvolutionCandidate(
+            id=self._generate_id("P"),
+            question_prompt=base_question_prompt,
+        )
 
         self.generation_results: list[GenerationResult] = []
         self.total_usage = TokenUsage()
+
+    def _generate_id(self, prefix: str = "C") -> str:
+        """Generate a unique ID for a candidate.
+
+        Args:
+            prefix: "P" for parent/promoted, "C" for child
+        """
+        candidate_id = f"{prefix}{self._next_id}"
+        self._next_id += 1
+        return candidate_id
 
     def _extract_usage(self, result) -> tuple[int, int]:
         """Extract input/output tokens from an agent result."""
@@ -138,7 +165,8 @@ class QuestionSetEvolutionEngine:
         )
         # Add any evolved rubric additions
         if candidate.rubric_prompt_additions:
-            prompt += f"\n\n## Additional Requirements\n{candidate.rubric_prompt_additions}"
+            prompt += f"\n\n## Additional Requirements\n{
+                candidate.rubric_prompt_additions}"
 
         result = await rubric_writer_agent.run(prompt)
         input_tokens, output_tokens = self._extract_usage(result)
@@ -150,7 +178,8 @@ class QuestionSetEvolutionEngine:
     ) -> JudgeFeedback:
         """Evaluate a candidate's question set and rubric."""
         if candidate.question_set is None or candidate.rubric is None:
-            raise ValueError("Both question set and rubric must be generated first")
+            raise ValueError(
+                "Both question set and rubric must be generated first")
 
         prompt = create_judge_prompt(
             candidate.question_set,
@@ -173,6 +202,7 @@ class QuestionSetEvolutionEngine:
             candidate.question_prompt,
             candidate.rubric_prompt_additions,
             candidate.feedback,
+            rubric_base_system_prompt=RUBRIC_WRITER_SYSTEM_PROMPT,
         )
         result = await mutator_agent.run(prompt)
         input_tokens, output_tokens = self._extract_usage(result)
@@ -211,178 +241,260 @@ class QuestionSetEvolutionEngine:
             candidate.score = 0.0
 
     async def run_generation(self, generation: int) -> GenerationResult:
-        """Run a single generation of evolution."""
+        """Run a single generation of (1+λ) evolution.
+
+        Algorithm:
+        1. If first generation, evaluate the parent
+        2. Generate λ children by mutating the parent
+        3. Evaluate all children in parallel
+        4. If best child > parent, child becomes new parent
+        5. Otherwise, parent survives unchanged
+        """
         print(f"\n{'='*60}")
         print(f"Generation {generation}")
         print(f"{'='*60}")
 
-        # Track usage for this generation
         gen_usage = TokenUsage()
 
-        # Process all candidates in parallel
-        print(f"Processing {len(self.population)} candidates...")
+        # First generation: evaluate the initial parent
+        if generation == 1:
+            print(f"\n[INIT] Evaluating initial parent [{self.parent.id}]...")
+            await self.process_candidate(self.parent, gen_usage)
+            print(f"[INIT] Parent [{self.parent.id}] score: {
+                  self.parent.score:.1f}")
 
-        # Create per-candidate usage trackers for parallel execution
-        candidate_usages = [TokenUsage() for _ in self.population]
+        # Show current parent status
+        print(f"\n[PARENT] Current champion: [{self.parent.id}] score={
+              self.parent.score:.1f}")
+        if self.parent.parent_id:
+            print(f"         Lineage: {
+                  self.parent.parent_id} -> {self.parent.id}")
+
+        # Generate λ children by mutating the parent
+        print(f"\n[MUTATE] Generating {
+              self.num_children} children from parent [{self.parent.id}]...")
+        children = await self._generate_children(gen_usage)
+
+        # Print mutation details for each child (only in verbose mode)
+        if self.verbose:
+            for child in children:
+                if child.mutation_rationale:
+                    print(f"\n[{child.id}] Mutation rationale:")
+                    # Print each line indented
+                    for line in child.mutation_rationale.strip().split("\n"):
+                        print(f"         {line}")
+
+        # Process all children in parallel
+        print(f"\n[EVAL] Evaluating {len(children)} children...")
+        child_usages = [TokenUsage() for _ in children]
         await asyncio.gather(
             *[
                 self.process_candidate(c, u)
-                for c, u in zip(self.population, candidate_usages)
+                for c, u in zip(children, child_usages)
             ]
         )
 
-        # Merge all candidate usages
-        for u in candidate_usages:
+        # Merge all child usages
+        for u in child_usages:
             gen_usage.merge(u)
 
-        # Sort by score
-        self.population.sort(key=lambda c: c.score, reverse=True)
+        # Find best child
+        children.sort(key=lambda c: c.score, reverse=True)
+        best_child = children[0]
 
-        # Report scores
-        scores = [c.score for c in self.population]
-        print(f"Scores: {[f'{s:.1f}' for s in scores]}")
-        print(f"Average: {sum(scores) / len(scores):.1f}")
-        print(f"Best: {scores[0]:.1f}")
+        # Report all scores with IDs
+        print(f"\n[SCORES] Generation {generation} results:")
+        print(f"         Parent [{self.parent.id}]: {self.parent.score:.1f}")
+        for child in children:
+            marker = " <-- BEST CHILD" if child.id == best_child.id else ""
+            print(f"         Child  [{child.id}] (from {
+                  child.parent_id}): {child.score:.1f}{marker}")
 
-        # Save best candidate
-        best = self.population[0]
-        self._save_generation(generation, best)
+        # Selection: compare best child against parent
+        all_scores = [self.parent.score] + [c.score for c in children]
+        print(f"\n[SELECT] Comparing best child [{
+              best_child.id}] vs parent [{self.parent.id}]...")
+        if best_child.score > self.parent.score:
+            print(f"         ✓ Child [{best_child.id}] beats parent ({
+                  best_child.score:.1f} > {self.parent.score:.1f})")
+            print(f"         [{best_child.id}] is promoted to new parent!")
+            self.parent = best_child
+        else:
+            print(f"         ✗ Parent [{self.parent.id}] survives (no child beat {
+                  self.parent.score:.1f})")
 
-        # Create next generation through tournament selection
-        mutation_usage = TokenUsage()
-        await self._evolve_population(mutation_usage)
-        gen_usage.merge(mutation_usage)
+        # Save best (current parent)
+        self._save_generation(generation, self.parent)
 
         # Update total usage
         self.total_usage.merge(gen_usage)
 
         # Print usage for this generation
-        print(f"\nGeneration {generation} usage: {gen_usage}")
-        print(f"Total usage so far: {self.total_usage}")
+        print(f"\n[USAGE] Generation {generation}: {gen_usage}")
+        print(f"[USAGE] Total so far: {self.total_usage}")
 
         result = GenerationResult(
             generation=generation,
-            best_candidate=best,
-            average_score=sum(scores) / len(scores),
-            all_scores=scores,
+            best_candidate=self.parent,
+            average_score=sum(all_scores) / len(all_scores),
+            all_scores=all_scores,
             usage=gen_usage,
         )
         self.generation_results.append(result)
 
         return result
 
-    async def _evolve_population(self, usage: TokenUsage) -> None:
-        """Evolve the population through selection and mutation."""
-        # Keep top performers
-        survivors = self.population[: self.tournament_size]
+    async def _generate_children(self, usage: TokenUsage) -> list[EvolutionCandidate]:
+        """Generate λ children by mutating the current parent.
 
-        # Always keep best unchanged
-        new_population = [
-            EvolutionCandidate(
-                question_prompt=survivors[0].question_prompt,
-                rubric_prompt_additions=survivors[0].rubric_prompt_additions,
+        Each child is an independent mutation of the parent.
+        If mutation fails, we retry; if it fails repeatedly, we skip that child.
+        """
+        children = []
+
+        # Generate children in parallel using mutation
+        mutation_tasks = []
+        mutation_usages = [TokenUsage() for _ in range(self.num_children)]
+
+        for i in range(self.num_children):
+            mutation_tasks.append(
+                self._try_mutate_candidate(self.parent, mutation_usages[i])
             )
-        ]
 
-        # Mutate survivors and fill population
-        for survivor in survivors:
-            if len(new_population) >= self.population_size:
-                break
+        results = await asyncio.gather(*mutation_tasks, return_exceptions=True)
 
-            if random.random() < self.mutation_rate:
-                # Mutate this survivor
-                try:
-                    mutated = await self.mutate_candidate(survivor, usage)
-                    new_population.append(
-                        EvolutionCandidate(
-                            question_prompt=mutated.question_prompt,
-                            rubric_prompt_additions=mutated.rubric_prompt_additions,
-                        )
-                    )
-                    print(f"Mutated candidate: {mutated.mutation_rationale[:100]}...")
-                except Exception as e:
-                    print(f"Mutation failed: {e}, keeping original")
-                    new_population.append(
-                        EvolutionCandidate(
-                            question_prompt=survivor.question_prompt,
-                            rubric_prompt_additions=survivor.rubric_prompt_additions,
-                        )
-                    )
-            else:
-                # Keep unchanged
-                new_population.append(
-                    EvolutionCandidate(
-                        question_prompt=survivor.question_prompt,
-                        rubric_prompt_additions=survivor.rubric_prompt_additions,
-                    )
+        # Collect successful mutations
+        for i, result in enumerate(results):
+            usage.merge(mutation_usages[i])
+            if isinstance(result, Exception):
+                print(f"         Mutation {i+1} failed: {result}")
+            elif result is not None:
+                mutated = result
+                child_id = self._generate_id("C")
+                child = EvolutionCandidate(
+                    id=child_id,
+                    question_prompt=mutated.question_prompt,
+                    parent_id=self.parent.id,
+                    rubric_prompt_additions=mutated.rubric_prompt_additions,
+                    mutation_rationale=mutated.mutation_rationale,
                 )
+                children.append(child)
+                print(f"         [{child_id}] from [{self.parent.id}]")
 
-        # Fill remaining slots with mutations of random survivors
-        while len(new_population) < self.population_size:
-            survivor = random.choice(survivors)
-            try:
-                mutated = await self.mutate_candidate(survivor, usage)
-                new_population.append(
-                    EvolutionCandidate(
-                        question_prompt=mutated.question_prompt,
-                        rubric_prompt_additions=mutated.rubric_prompt_additions,
-                    )
+        if not children:
+            # Fallback: if all mutations failed, create one clone (shouldn't happen often)
+            clone_id = self._generate_id("C")
+            print(
+                f"         Warning: All mutations failed, creating clone [{clone_id}]")
+            children.append(
+                EvolutionCandidate(
+                    id=clone_id,
+                    question_prompt=self.parent.question_prompt,
+                    parent_id=self.parent.id,
+                    rubric_prompt_additions=self.parent.rubric_prompt_additions,
                 )
-            except Exception as e:
-                print(f"Mutation failed: {e}, keeping original")
-                new_population.append(
-                    EvolutionCandidate(
-                        question_prompt=survivor.question_prompt,
-                        rubric_prompt_additions=survivor.rubric_prompt_additions,
-                    )
-                )
+            )
 
-        self.population = new_population
+        return children
+
+    async def _try_mutate_candidate(
+        self, candidate: EvolutionCandidate, usage: TokenUsage
+    ) -> Optional[MutatedPrompts]:
+        """Try to mutate a candidate, returning None if it fails."""
+        try:
+            return await self.mutate_candidate(candidate, usage)
+        except Exception as e:
+            return None
 
     def _save_generation(self, generation: int, candidate: EvolutionCandidate) -> None:
         """Save the best candidate from a generation."""
         # Save question prompt
-        prompt_path = self.output_dir / f"generation_{generation}_question_prompt.txt"
+        prompt_path = self.output_dir / \
+            f"generation_{generation}_question_prompt.txt"
         prompt_path.write_text(candidate.question_prompt)
 
         # Save rubric additions
         if candidate.rubric_prompt_additions:
             rubric_prompt_path = (
-                self.output_dir / f"generation_{generation}_rubric_additions.txt"
+                self.output_dir /
+                f"generation_{generation}_rubric_additions.txt"
             )
             rubric_prompt_path.write_text(candidate.rubric_prompt_additions)
 
+        # Save mutation rationale
+        if candidate.mutation_rationale:
+            rationale_path = (
+                self.output_dir /
+                f"generation_{generation}_mutation_rationale.txt"
+            )
+            rationale_path.write_text(candidate.mutation_rationale)
+
         # Save question set as JSON
         if candidate.question_set:
-            qs_path = self.output_dir / f"generation_{generation}_questions.json"
-            qs_path.write_text(candidate.question_set.model_dump_json(indent=2))
+            qs_path = self.output_dir / \
+                f"generation_{generation}_questions.json"
+            qs_path.write_text(
+                candidate.question_set.model_dump_json(indent=2))
 
         # Save rubric as JSON
         if candidate.rubric:
-            rubric_path = self.output_dir / f"generation_{generation}_rubric.json"
+            rubric_path = self.output_dir / \
+                f"generation_{generation}_rubric.json"
             rubric_path.write_text(candidate.rubric.model_dump_json(indent=2))
 
         # Save feedback
         if candidate.feedback:
-            feedback_path = self.output_dir / f"generation_{generation}_feedback.json"
-            feedback_path.write_text(candidate.feedback.model_dump_json(indent=2))
+            feedback_path = self.output_dir / \
+                f"generation_{generation}_feedback.json"
+            feedback_path.write_text(
+                candidate.feedback.model_dump_json(indent=2))
 
         print(f"Saved generation {generation} to {self.output_dir}")
 
     async def evolve(self, generations: int) -> list[GenerationResult]:
-        """Run the full evolution process."""
-        print(f"Starting evolution with {generations} generations")
-        print(f"Population size: {self.population_size}")
-        print(f"Tournament size: {self.tournament_size}")
-        print(f"Mutation rate: {self.mutation_rate}")
-        print(f"Pricing: ${INPUT_PRICE_PER_1M}/1M input, ${OUTPUT_PRICE_PER_1M}/1M output")
+        """Run the full (1+λ) evolution process."""
+        print(f"Starting (1+λ) Evolution Strategy")
+        print(f"Generations: {generations}")
+        print(f"Children per generation (λ): {self.num_children}")
+        print(f"Initial parent: [{self.parent.id}]")
+        print(f"Pricing: ${
+              INPUT_PRICE_PER_1M}/1M input, ${OUTPUT_PRICE_PER_1M}/1M output")
 
         for gen in range(1, generations + 1):
             await self.run_generation(gen)
 
         # Print final summary
         print(f"\n{'='*60}")
-        print("FINAL TOKEN USAGE SUMMARY")
+        print("EVOLUTION COMPLETE")
+        print(f"{'='*60}")
+
+        # Build lineage chain
+        lineage = [self.parent.id]
+        current_parent_id = self.parent.parent_id
+        while current_parent_id:
+            lineage.insert(0, current_parent_id)
+            # Find the parent in generation results to continue the chain
+            found = False
+            for result in self.generation_results:
+                if result.best_candidate.id == current_parent_id:
+                    current_parent_id = result.best_candidate.parent_id
+                    found = True
+                    break
+            if not found:
+                break
+
+        print(f"\n[WINNER] Final champion: [{self.parent.id}] score={
+              self.parent.score:.1f}")
+        print(f"[LINEAGE] {' -> '.join(lineage)}")
+
+        # Score progression
+        print(f"\n[HISTORY] Score progression:")
+        for result in self.generation_results:
+            print(f"         Gen {result.generation}: [{result.best_candidate.id}] = {
+                  result.best_candidate.score:.1f}")
+
+        print(f"\n{'='*60}")
+        print("TOKEN USAGE SUMMARY")
         print(f"{'='*60}")
         print(f"Total input tokens:  {self.total_usage.input_tokens:,}")
         print(f"Total output tokens: {self.total_usage.output_tokens:,}")
@@ -402,7 +514,8 @@ class QuestionSetEvolutionEngine:
 
             generations = [r.generation for r in self.generation_results]
             avg_scores = [r.average_score for r in self.generation_results]
-            best_scores = [r.best_candidate.score for r in self.generation_results]
+            best_scores = [
+                r.best_candidate.score for r in self.generation_results]
 
             plt.figure(figsize=(10, 6))
             plt.plot(generations, avg_scores, "b-o", label="Average Score")
@@ -414,6 +527,7 @@ class QuestionSetEvolutionEngine:
             plt.grid(True, alpha=0.3)
             plt.savefig(self.output_dir / "evolution_progress.png", dpi=150)
             plt.close()
-            print(f"Saved evolution plot to {self.output_dir / 'evolution_progress.png'}")
+            print(f"Saved evolution plot to {
+                  self.output_dir / 'evolution_progress.png'}")
         except ImportError:
             print("matplotlib not available, skipping plot")

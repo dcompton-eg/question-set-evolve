@@ -71,9 +71,7 @@ rubric_writer_agent = Agent[None, RubricOutput](
 def create_rubric_prompt(question_set: QuestionSet, question_prompt: str) -> str:
     """Create a prompt for generating a rubric from a question set."""
     questions_summary = "\n".join(
-        f"- Q{i+1} ({q.question_id}): {q.question_text[:100]}..."
-        if len(q.question_text) > 100
-        else f"- Q{i+1} ({q.question_id}): {q.question_text}"
+        f"- Q{i+1} ({q.question_id}): {q.question_text}"
         for i, q in enumerate(question_set.questions)
     )
 
