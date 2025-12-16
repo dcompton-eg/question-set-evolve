@@ -102,6 +102,84 @@ This produces:
 - Hiring recommendation (Strong Hire / Hire / Lean No Hire / No Hire)
 - Narrative summary of the candidate's performance
 
+### Automated Scoring with GPT/OpenWebUI
+
+For organizations using ChatGPT, [OpenWebUI](https://openwebui.com/), or similar chat interfaces, you can integrate the generated rubric into a self-service scoring workflow that allows recruiters to automatically evaluate candidates without requiring API access or technical setup.
+
+#### Setup
+
+1. **Generate your question set and rubric:**
+   ```bash
+   question-evolve evolve --prompt-file prompt.txt --generations 5
+   question-evolve select-best --output output
+   ```
+
+2. **Create a Custom GPT or OpenWebUI Model Preset:**
+
+   **For ChatGPT:**
+   - Go to **Explore GPTs** → **Create**
+   - Configure the system instructions as shown below
+
+   **For OpenWebUI:**
+   - Go to **Workspace** → **Models** → **Create a Model**
+   - Give it a name like "Interview Scorer - Senior Go Engineer"
+
+   **System Prompt Template:**
+
+   ```
+   You are an expert interview evaluator. Your task is to score candidate interview transcripts using the provided rubric.
+
+   ## Scoring Rubric
+
+   [Paste the contents of best_rubric.json here, or format it as readable text]
+
+   ## Questions Being Evaluated
+
+   [Paste the contents of best_questions.json here, or summarize the questions]
+
+   ## Your Task
+
+   When given an interview transcript, evaluate the candidate by:
+
+   1. For each question in the rubric:
+      - Score each criterion on a 1-5 scale using the provided anchors
+      - Note any red flags observed
+      - Note any bonus indicators observed
+
+   2. Provide an overall assessment:
+      - Calculate the overall score (weighted average)
+      - List 3-5 key strengths
+      - List 3-5 areas for improvement
+      - Give a hiring recommendation: Strong Hire / Hire / Lean No Hire / No Hire
+      - Write a brief summary paragraph
+
+   Format your response as a structured evaluation report.
+   ```
+
+3. **Create transcripts from interviews:**
+   - Record your interviews (with candidate consent)
+   - Use AI transcription services (e.g., Whisper, Otter.ai, or built-in audio transcription) to generate text transcripts
+   - Clean up the transcript to clearly identify interviewer vs candidate responses
+
+#### Usage for Recruiters
+
+Once configured, recruiters can score candidates directly:
+
+1. Open the custom GPT or select the model preset
+2. Paste or upload the candidate's interview transcript
+3. The model will return a structured evaluation with:
+   - Per-question scores and reasoning
+   - Overall competency assessment
+   - Hiring recommendation
+   - Strengths and areas for improvement
+
+#### Tips
+
+- **Consistency**: Using the same custom GPT/preset ensures all candidates are evaluated against identical criteria
+- **Batch processing**: Score multiple candidates in separate chats for comparison
+- **Audit trail**: Chat history provides documentation of scoring decisions
+- **Model selection**: For best results, use GPT-4 or Claude class models that can handle long context (rubric + transcript)
+
 ### Select Best Generation
 
 After running evolution, select the best-scoring generation and create output files:
